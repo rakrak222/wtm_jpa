@@ -21,10 +21,12 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화 : 테스트할 때만
             .authorizeHttpRequests(auth -> auth  // Customizer로 authorizeHttpRequests 설정
-                    .requestMatchers("/api/v1/user/login",
-                                     "/api/v1/user/signup",
-                                     "/error").permitAll() // 로그인 엔드포인트 접근 허용
-                                .anyRequest().authenticated() // 다른 요청은 인증 필요
+//                    .requestMatchers("/api/v1/user/login",
+//                                     "/api/v1/user/signup",
+//                                     "/error").permitAll() // 로그인 엔드포인트 접근 허용
+//                                .anyRequest().authenticated() // 다른 요청은 인증 필요
+                            .anyRequest().permitAll() // 로그인 엔드포인트 접근 허용
+
 
             ).exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(
                     (request, response, authException) -> // 인증 실패 시 응답 설정
