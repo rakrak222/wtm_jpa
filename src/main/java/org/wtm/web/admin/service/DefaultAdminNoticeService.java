@@ -24,58 +24,55 @@ import java.util.stream.Collectors;
 public class DefaultAdminNoticeService implements AdminNoticeService {
 
     private final AdminNoticeRepository noticeRepository;
-    private final AdminReviewRepository reviewRepository;
     private final AdminStoreRepository storeRepository;
     private final AdminUserRepository userRepository;
-
     private final AdminNoticeMapper noticeMapper;
 
+
     /**
-     * 공지사항 조회
+     * 공지 조회
      */
+    @Override
     public List<NoticeListDto> getNoticesByStoreId(Long storeId) {
         List<Notice> notices = noticeRepository.findNoticesWithUserByStoreId(storeId);
-        return notices.stream().map(noticeMapper::toNoticeListDto).collect(Collectors.toList());
+        return notices.stream()
+                .map(noticeMapper::toNoticeListDto)
+                .collect(Collectors.toList());
     }
 
     /**
-     * 공지사항 등록
+     * 공지 작성
      */
-    public Notice createNotice(Long storeId, NoticeCreateDto noticeCreateDto) {
+    @Override
+    public NoticeDto createNotice(Long storeId, NoticeCreateDto noticeCreateDto) {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("스토어를 찾을 수 없습니다."));
         User user = userRepository.findById(noticeCreateDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-
         Notice notice = noticeMapper.toNoticeEntity(noticeCreateDto, store, user);
-
-        return noticeRepository.save(notice);
+        Notice savedNotice = noticeRepository.save(notice);
+        return noticeMapper.toNoticeDto(savedNotice);
     }
 
     /**
-     * 공지사항 수정
+     * 공지 수정
      */
-    @Transactional
+    @Override
     public NoticeDto updateNotice(Long storeId, Long noticeId, NoticeUpdateDto noticeUpdateDto) {
-        Notice notice = noticeRepository.findByStoreIdAndId(storeId, noticeId)
-                .orElseThrow(()-> new IllegalArgumentException("공지사항을 찾을 수 없습니다"));
-
+        Notice notice = noticeRepository.findNoticeByStoreIdAndId(storeId, noticeId)
+                .orElseThrow(() -> new IllegalArgumentException("공지사항을 찾을 수 없습니다."));
         noticeMapper.updateNoticeFromDto(noticeUpdateDto, notice);
-
         Notice updatedNotice = noticeRepository.save(notice);
-
         return noticeMapper.toNoticeDto(updatedNotice);
     }
 
     /**
-     * 공지사항 삭제
+     * 공지 삭제
      */
-    @Transactional
+    @Override
     public void deleteNotice(Long storeId, Long noticeId) {
-        Notice notice = noticeRepository.findByStoreIdAndId(storeId, noticeId)
-                .orElseThrow(()-> new IllegalArgumentException("공지사항을 찾을 수 없습니다"));
+        Notice notice = noticeRepository.findNoticeByStoreIdAndId(storeId, noticeId)
+                .orElseThrow(() -> new IllegalArgumentException("공지사항을 찾을 수 없습니다."));
         noticeRepository.delete(notice);
     }
-
-
 }

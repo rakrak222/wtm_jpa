@@ -18,7 +18,7 @@ public interface AdminNoticeService {
     /**
      * 공지사항 등록
      */
-    public Notice createNotice(Long storeId, NoticeCreateDto noticeCreateDto);
+    public NoticeDto createNotice(Long storeId, NoticeCreateDto noticeCreateDto);
 
     /**
      * 공지사항 수정
