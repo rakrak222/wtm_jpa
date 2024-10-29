@@ -34,11 +34,11 @@ public class Notice extends BaseTimeEntity {
     private User user;
 
     public void changeTitle(String title) {
-        this.title = title;
+        if (title != null) this.title = title;
     }
 
     public void changeContent(String content) {
-        this.content = content;
+        if (content != null) this.content = content;
     }
 }
 

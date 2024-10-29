@@ -34,4 +34,9 @@ public class ReviewComment extends BaseTimeEntity {
     @JoinColumn(name = "review_id")
     private Review review;
 
+    public ReviewComment changeReviewCommentContent(String content) {
+        this.content = content;
+        return this;
+    }
+
 }

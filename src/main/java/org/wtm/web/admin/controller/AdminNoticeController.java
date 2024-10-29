@@ -21,15 +21,21 @@ public class AdminNoticeController {
     private final AdminNoticeService adminNoticeService;
 
     @GetMapping("/stores/{storeId}/notices")
-    public List<NoticeListDto> getNotices(@PathVariable Long storeId){
-        return adminNoticeService.getNoticesByStoreId(storeId);
+    public ResponseEntity<List<NoticeListDto>> getNotices(@PathVariable Long storeId){
+        try {
+            List<NoticeListDto> notices = adminNoticeService.getNoticesByStoreId(storeId);
+            return new ResponseEntity<>(notices, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
     }
 
     @PostMapping("/stores/{storeId}/notices")
     public ResponseEntity<?> createNotice(@PathVariable Long storeId, @RequestBody NoticeCreateDto noticeCreateDto){
         try {
-            Notice notice = adminNoticeService.createNotice(storeId, noticeCreateDto);
-            return new ResponseEntity<>(notice, HttpStatus.CREATED);
+            NoticeDto noticeDto = adminNoticeService.createNotice(storeId, noticeCreateDto);
+            return new ResponseEntity<>(noticeDto, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -59,4 +65,5 @@ public class AdminNoticeController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
+
 }

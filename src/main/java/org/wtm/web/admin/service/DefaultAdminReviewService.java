@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wtm.web.admin.dto.review.ReviewCommentCreateDto;
 import org.wtm.web.admin.dto.review.ReviewCommentResponseDto;
+import org.wtm.web.admin.dto.review.ReviewCommentUpdateDto;
 import org.wtm.web.admin.dto.review.ReviewListDto;
 import org.wtm.web.admin.mapper.AdminReviewCommentMapper;
 import org.wtm.web.admin.mapper.AdminReviewMapper;
@@ -38,12 +39,15 @@ public class DefaultAdminReviewService implements AdminReviewService {
     @Transactional(readOnly = true)
     public List<ReviewListDto> getReviewsByStoreId(Long storeId) {
         List<Review> reviews = reviewRepository.findAllByStoreId(storeId);
-        return reviews.stream().map(reviewMapper::toReviewListDto).collect(Collectors.toList());
+        return reviews.stream()
+                .map(reviewMapper::toReviewListDto)
+                .collect(Collectors.toList());
     }
 
     /**
      * 리뷰 답글 작성
      */
+    @Transactional
     public ReviewCommentResponseDto createReviewComment(Long storeId, Long reviewId, ReviewCommentCreateDto reviewCommentCreateDto) {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("스토어를 찾을 수 없습니다."));
@@ -53,16 +57,33 @@ public class DefaultAdminReviewService implements AdminReviewService {
         User user = userRepository.findById(reviewCommentCreateDto.getUserId())
                 .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습ㄴ디ㅏ."));
 
-        ReviewComment reviewComment = reviewCommentMapper.toReviewCommentEntity(reviewCommentCreateDto,store,review,user);
+        ReviewComment reviewComment = reviewCommentMapper.toReviewCommentEntity(reviewCommentCreateDto, store, review, user);
         ReviewComment savedReviewComment = reviewCommentRepository.save(reviewComment);
-
         return reviewCommentMapper.toReviewCommentResponseDto(savedReviewComment);
-//        return new ReviewCommentResponseDto(
-//                savedReviewComment.getId(),
-//                savedReviewComment.getContent(),
-//                user.getName(),
-//                user.getProfilePicture()
-//        );
+    }
+
+    @Transactional
+    public ReviewCommentResponseDto updateReviewComment(Long storeId, Long reviewId, Long commentId, ReviewCommentUpdateDto reviewCommentUpdateDto) {
+        ReviewComment reviewComment = reviewCommentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("답글을 찾을 수 없습니다."));
+        if (!reviewComment.getStore().getId().equals(storeId) || !reviewComment.getReview().getId().equals(reviewId)) {
+            throw new IllegalArgumentException("스토어 또는 리뷰 Id가 일치하지 않습니다.");
+        }
+        reviewComment.changeReviewCommentContent(reviewCommentUpdateDto.getContent());
+        ReviewComment updatedReviewComment = reviewCommentRepository.save(reviewComment);
+        return reviewCommentMapper.toReviewCommentResponseDto(updatedReviewComment);
+    }
+
+    @Transactional
+    public void deleteReviewComment(Long storeId, Long reviewId, Long commentId) {
+        ReviewComment reviewComment = reviewCommentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("답글을 찾을 수 없습니다."));
+
+        if (!reviewComment.getStore().getId().equals(storeId) || !reviewComment.getReview().getId().equals(reviewId)) {
+            throw new IllegalArgumentException("스토어 또는 리뷰 Id가 일치하지 않습니다.");
+        }
+
+        reviewCommentRepository.delete(reviewComment);
     }
 
 }

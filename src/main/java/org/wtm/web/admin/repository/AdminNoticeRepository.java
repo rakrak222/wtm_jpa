@@ -15,5 +15,5 @@ public interface AdminNoticeRepository extends JpaRepository<Notice, Long> {
     @EntityGraph(attributePaths = {"store", "user"})
     List<Notice> findNoticesWithUserByStoreId(Long storeId);
 
-    Optional<Notice> findByStoreIdAndId(Long storeId, Long noticeId);
+    Optional<Notice> findNoticeByStoreIdAndId(Long storeId, Long noticeId);
 }

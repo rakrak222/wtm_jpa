@@ -1,5 +1,6 @@
 package org.wtm.web.admin.mapper;
 
+
 import org.springframework.stereotype.Component;
 import org.wtm.web.admin.dto.notice.NoticeCreateDto;
 import org.wtm.web.admin.dto.notice.NoticeDto;
@@ -18,7 +19,7 @@ public class AdminNoticeMapper {
                 notice.getStore().getId(),
                 notice.getUser().getId(),
                 notice.getTitle(),
-                notice.getTitle()
+                notice.getContent()
         );
     }
 
@@ -35,19 +36,19 @@ public class AdminNoticeMapper {
 
     public Notice toNoticeEntity(NoticeCreateDto noticeCreateDto, Store store, User user) {
         return Notice.builder()
-                .title(noticeCreateDto.getTitle())
-                .content(noticeCreateDto.getContent())
                 .store(store)
                 .user(user)
+                .title(noticeCreateDto.getTitle())
+                .content(noticeCreateDto.getContent())
                 .build();
     }
 
     public void updateNoticeFromDto(NoticeUpdateDto noticeUpdateDto, Notice notice) {
-        if (noticeUpdateDto.getTitle() != null) {
-            notice.changeTitle(noticeUpdateDto.getTitle());
-        }
-        if (noticeUpdateDto.getContent() != null) {
-            notice.changeContent(noticeUpdateDto.getContent());
-        }
+        notice.changeTitle(
+                noticeUpdateDto.getTitle()
+        );
+        notice.changeContent(
+                noticeUpdateDto.getContent()
+        );
     }
 }

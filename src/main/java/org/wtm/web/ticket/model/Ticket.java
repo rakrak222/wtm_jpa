@@ -25,4 +25,9 @@ public class Ticket extends BaseTimeEntity {
     @ManyToOne
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
+
+    public Ticket updatePrice(Long price) {
+        this.price = price;
+        return this;
+    }
 }

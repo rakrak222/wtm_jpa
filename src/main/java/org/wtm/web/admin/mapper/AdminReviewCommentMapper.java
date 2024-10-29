@@ -1,5 +1,6 @@
 package org.wtm.web.admin.mapper;
 
+
 import org.springframework.stereotype.Component;
 import org.wtm.web.admin.dto.review.ReviewCommentCreateDto;
 import org.wtm.web.admin.dto.review.ReviewCommentResponseDto;
@@ -14,10 +15,10 @@ public class AdminReviewCommentMapper {
     public ReviewComment toReviewCommentEntity (ReviewCommentCreateDto reviewCommentCreateDto, Store store, Review review, User user) {
 
         return ReviewComment.builder()
-                .content(reviewCommentCreateDto.getContent())
                 .user(user)
                 .store(store)
                 .review(review)
+                .content(reviewCommentCreateDto.getContent())
                 .build();
     }
 
