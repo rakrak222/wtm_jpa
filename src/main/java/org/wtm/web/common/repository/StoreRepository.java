@@ -26,4 +26,10 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
 
     @Query("SELECT t FROM Ticket t WHERE t.store.id = :storeId")
     List<Ticket> findTicketsByStoreId(@Param("storeId") Long storeId);
+
+    @Query("SELECT COUNT(r), COALESCE(AVG(rs.score), 0)" +
+    "FROM Review r JOIN r.reviewScores rs " +
+    "WHERE r.store.id = :storeId")
+    Object[] findReviewStateByStoreId(@Param("storeId") Long storeId);
+
 }

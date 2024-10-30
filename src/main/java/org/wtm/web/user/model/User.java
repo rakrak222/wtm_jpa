@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Entity
-@Table(name ="USER")
+@Table(name ="USERS")
 @Getter
 @Builder
 @ToString
@@ -21,6 +21,7 @@ public class User extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long id;
 
     @Column(nullable = false, length = 100, unique = true)

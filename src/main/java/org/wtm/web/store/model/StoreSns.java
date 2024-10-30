@@ -15,6 +15,7 @@ public class StoreSns extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "store_sns_id")
     private Long id;
 
     @Column(nullable = false, length = 50)

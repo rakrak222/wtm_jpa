@@ -6,8 +6,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.wtm.web.common.repository.StoreRepository;
 import org.wtm.web.store.dto.StoreDetailResponseDto;
 import org.wtm.web.store.dto.StoreResponseDto;
+import org.wtm.web.store.dto.StoreReviewStatsDto;
 import org.wtm.web.store.mapper.StoreDetailMapper;
 import org.wtm.web.store.mapper.StoreMapper;
+import org.wtm.web.store.mapper.StoreReviewStatsMapper;
 import org.wtm.web.store.model.Store;
 import org.wtm.web.store.model.StoreSns;
 import org.wtm.web.store.service.StoreService;
@@ -54,5 +56,15 @@ public class DefaultStoreService implements StoreService {
 
         // StoreDetailMapper를 사용하여 필요한 필드만 가진 DTO로 변환
         return storeDetailMapper.toDto(store, storeSnsList, ticketList);
+    }
+
+    public StoreReviewStatsDto getStoreReviewStats(Long storeId) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("가게를 찾을수 없습니다."));
+        Object[] stats = storeRepository.findReviewStateByStoreId(storeId);
+        Long reviewCount = (Long) stats[0];
+        Double averageReviewScore = (Double) stats[1];
+
+        return StoreReviewStatsMapper.toDto(store, reviewCount, averageReviewScore);
     }
 }

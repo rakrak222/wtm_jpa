@@ -3,11 +3,13 @@ package org.wtm.web.ticket.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.wtm.web.common.repository.StoreRepository;
 import org.wtm.web.common.repository.TicketHistoryPurchaseRepository;
 import org.wtm.web.common.repository.TicketHistoryUsageRepository;
 import org.wtm.web.store.model.Store;
 import org.wtm.web.ticket.dto.TicketResponseDto;
+import org.wtm.web.ticket.mapper.TicketMapper;
 import org.wtm.web.ticket.service.TicketService;
 
 @Service
@@ -17,6 +19,7 @@ public class DefaultTicketService implements TicketService {
     private final TicketHistoryPurchaseRepository ticketHistoryPurchaseRepository;
     private final TicketHistoryUsageRepository ticketHistoryUsageRepository;
 
+    @Transactional
     public TicketResponseDto getTicketsByStoreId(Long storeId, Long userId) {
         // 특정 가게의 정보 조회
         Store store = storeRepository.findById(storeId)
@@ -30,6 +33,6 @@ public class DefaultTicketService implements TicketService {
         int remainingTickets = totalPurchasedTickets - totalUsedTickets;
 
         // 응답 데이터를 Dto에 담아서 반환
-        return new TicketResponseDto(store.getName(), remainingTickets);
+        return TicketMapper.toDto(store, remainingTickets);
     }
 }

@@ -4,6 +4,7 @@ package org.wtm.web.menu.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.wtm.web.common.repository.*;
 import org.wtm.web.menu.dto.MenuRequestDto;
@@ -54,6 +55,7 @@ public class DefaultMenuService implements MenuService {
     }
 
     @Override
+    @Transactional
     public void addMenu(Long storeId, MenuRequestDto menuRequestDto) {
         // 오늘 날짜를 설정
         Store store = storeRepository.findById(storeId)
