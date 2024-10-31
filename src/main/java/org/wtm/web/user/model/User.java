@@ -21,6 +21,7 @@ public class User extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long id;
 
     @Column(nullable = false, length = 100, unique = true)
@@ -49,7 +50,6 @@ public class User extends BaseTimeEntity {
     public List<GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(role.getRole()));
     }
-
 
     public void updateName(String name) {
         this.name = name;

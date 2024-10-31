@@ -6,6 +6,9 @@ build/
 !**/src/test/**/build/
 .DS_Store
 
+# Ignore all test files in src/test/ directory
+src/test/
+
 ### STS ###
 .apt_generated
 .classpath
