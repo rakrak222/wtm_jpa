@@ -7,7 +7,7 @@ import org.wtm.web.common.entity.BaseTimeEntity;
 
 @Entity
 @Table(name = "MENU_IMG")
-@Getter @Setter
+@Getter
 @Builder
 @ToString(exclude = {"meal"})
 @NoArgsConstructor//(access = AccessLevel.PROTECTED)

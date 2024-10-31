@@ -15,7 +15,7 @@ import java.time.LocalDate;
                 @UniqueConstraint(columnNames = {"store_id", "meal_date"})
         }
 )
-@Getter @Setter
+@Getter
 @Builder
 @ToString(exclude = "store")
 @NoArgsConstructor//(access = AccessLevel.PROTECTED)

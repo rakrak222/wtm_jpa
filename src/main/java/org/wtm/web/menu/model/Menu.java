@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "MENU")
-@Getter @Setter
+@Getter
 @Builder
 @ToString(exclude = {"meal", "store", "user", "category"})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

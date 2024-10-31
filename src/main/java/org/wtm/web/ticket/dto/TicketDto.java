@@ -12,6 +12,6 @@ public class TicketDto {
 
     public TicketDto(Ticket ticket) {
         this.price = ticket.getPrice();
-        this.createdTime = ticket.getRegDate().toString();
+        this.createdTime = (ticket.getRegDate() != null) ? ticket.getRegDate().toString() : "N/A";
     }
 }

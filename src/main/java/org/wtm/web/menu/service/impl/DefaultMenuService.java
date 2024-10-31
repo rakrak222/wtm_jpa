@@ -75,9 +75,10 @@ public class DefaultMenuService implements MenuService {
         // 해당 가게에 오늘의 Meal이 있는지 확인하고 없으면 생성
         Meal meal = mealRepository.findByMealDateAndStoreId(today, storeId)
                 .orElseGet(() -> {
-                    Meal newMeal = new Meal();
-                    newMeal.setMealDate(today);
-                    newMeal.setStore(store);
+                    Meal newMeal = Meal.builder()
+                            .mealDate(today)
+                            .store(store)
+                            .build();
                     mealRepository.save(newMeal);
                     return newMeal;
                 });
@@ -106,20 +107,22 @@ public class DefaultMenuService implements MenuService {
         // 이미지 저장
         if (menuRequestDto.getFiles() != null) {
             for (MultipartFile file : menuRequestDto.getFiles()) {
-                MenuImg menuImg = new MenuImg();
-                menuImg.setMeal(meal);
-
-                // 서버에 파일 저장 경로 설정
-                String filePath = "/res/menuImgs/" + file.getOriginalFilename();
-                File destinationFile = new File(filePath);
                 try {
-                    file.transferTo(destinationFile);  // 실제 파일 저장
+                    // File 경로 설정 및 파일 저장
+                    String filePath = "/res/menuImgs/" + file.getOriginalFilename();
+                    File destinationFile = new File(filePath);
+                    file.transferTo(destinationFile);
+
+                    // MenuImg 객체 생성
+                    MenuImg menuImg = MenuImg.builder()
+                            .meal(meal)
+                            .img(filePath)
+                            .build();
+
+                    menuImgRepository.save(menuImg);
                 } catch (IOException e) {
                     throw new RuntimeException("파일 저장 중 오류가 발생했습니다: " + e.getMessage(), e);
                 }
-
-                menuImg.setImg(filePath);  // 경로 설정
-                menuImgRepository.save(menuImg);
             }
         }
     }
