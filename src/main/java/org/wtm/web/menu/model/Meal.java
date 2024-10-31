@@ -34,4 +34,13 @@ public class Meal extends BaseTimeEntity {
     @Column(name = "meal_date", nullable = false)
     private LocalDate mealDate;
 
+    public void setMealDate(LocalDate mealDate) {
+        this.mealDate = mealDate;
+    }
+
+    public void setStore(Store store) {
+        this.store = store;
+    }
+
+
 }
