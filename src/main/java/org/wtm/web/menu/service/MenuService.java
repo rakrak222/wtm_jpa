@@ -7,5 +7,5 @@ import org.wtm.web.menu.dto.MenuResponseDto;
 public interface MenuService {
     MenuResponseDto getTodayMenusByStoreId(Long storeId);
 
-    void addMenu(Long storeId, MenuRequestDto menuRequestDto);
+    void addMenu(Long storeId, MenuRequestDto menuRequestDto, Long userId);
 }

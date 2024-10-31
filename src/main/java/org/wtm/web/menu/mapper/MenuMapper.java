@@ -9,6 +9,7 @@ import org.wtm.web.menu.model.Menu;
 import org.wtm.web.menu.model.MenuCategory;
 import org.wtm.web.menu.model.MenuImg;
 import org.wtm.web.store.model.Store;
+import org.wtm.web.user.model.User;
 
 import java.util.Collections;
 import java.util.List;
@@ -18,18 +19,19 @@ import java.util.stream.Collectors;
 @Component
 public class MenuMapper {
 
-    public Menu toEntity(String menuName, MenuCategory category, Meal meal, Store store) {
+    public Menu toEntity(String menuName, MenuCategory category, Meal meal, Store store, User user) {
         return Menu.builder()
                 .name(menuName)
                 .category(category)
                 .meal(meal)
                 .store(store)
+                .user(user)
                 .build();
     }
-    public List<Menu> toEntityList(List<String> etcMenus, MenuCategory category, Meal meal, Store store) {
+    public List<Menu> toEntityList(List<String> etcMenus, MenuCategory category, Meal meal, Store store, User user) {
         return Optional.ofNullable(etcMenus).orElse(Collections.emptyList())
                 .stream()
-                .map(menuName -> toEntity(menuName, category, meal, store))
+                .map(menuName -> toEntity(menuName, category, meal, store, user))
                 .collect(Collectors.toList());
     }
 

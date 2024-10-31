@@ -16,7 +16,10 @@ import org.wtm.web.menu.model.MenuCategory;
 import org.wtm.web.menu.model.MenuImg;
 import org.wtm.web.menu.service.MenuService;
 import org.wtm.web.store.model.Store;
+import org.wtm.web.user.model.User;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +35,7 @@ public class DefaultMenuService implements MenuService {
     private final MenuCategoryRepository menuCategoryRepository;
     private final StoreRepository storeRepository;
     private final MenuMapper menuMapper;
+    private final UserRepository userRepository;
 
     @Override
     public MenuResponseDto getTodayMenusByStoreId(Long storeId) {
@@ -56,10 +60,15 @@ public class DefaultMenuService implements MenuService {
 
     @Override
     @Transactional
-    public void addMenu(Long storeId, MenuRequestDto menuRequestDto) {
+    public void addMenu(Long storeId, MenuRequestDto menuRequestDto, Long userId) {
         // 오늘 날짜를 설정
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 Store를 찾을 수 없습니다: " + storeId));
+
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("해당 ID의 User를 찾을 수 없습니다: " + userId));
+
 
         LocalDate today = LocalDate.now();
 
@@ -85,15 +94,13 @@ public class DefaultMenuService implements MenuService {
 
 
         // 메뉴 등록
-//        menuRepository.save(new Menu(menuRequestDto.getMainMenu(), mainCategory, meal, store));
-//        menuRepository.save(new Menu(menuRequestDto.getSoupMenu(), soupCategory, meal, store));
 
-        menuRepository.save(menuMapper.toEntity(menuRequestDto.getMainMenu(), mainCategory, meal, store));
-        menuRepository.save(menuMapper.toEntity(menuRequestDto.getSoupMenu(), soupCategory, meal, store));
+        menuRepository.save(menuMapper.toEntity(menuRequestDto.getMainMenu(), mainCategory, meal, store, user));
+        menuRepository.save(menuMapper.toEntity(menuRequestDto.getSoupMenu(), soupCategory, meal, store, user));
 
 
 //        null일 경우 nullpointerException 발생 >> null 일경우 빈리스트로 초기화시키는 과정 필요 or optional 사용
-        List<Menu> etcMenuEntities = menuMapper.toEntityList(menuRequestDto.getEtcMenus(), etcCategory, meal, store);
+        List<Menu> etcMenuEntities = menuMapper.toEntityList(menuRequestDto.getEtcMenus(), etcCategory, meal, store, user);
         menuRepository.saveAll(etcMenuEntities);
 
         // 이미지 저장
@@ -101,7 +108,17 @@ public class DefaultMenuService implements MenuService {
             for (MultipartFile file : menuRequestDto.getFiles()) {
                 MenuImg menuImg = new MenuImg();
                 menuImg.setMeal(meal);
-                menuImg.setImg("/res/menuImgs/" + file.getOriginalFilename());  // 경로 설정
+
+                // 서버에 파일 저장 경로 설정
+                String filePath = "/res/menuImgs/" + file.getOriginalFilename();
+                File destinationFile = new File(filePath);
+                try {
+                    file.transferTo(destinationFile);  // 실제 파일 저장
+                } catch (IOException e) {
+                    throw new RuntimeException("파일 저장 중 오류가 발생했습니다: " + e.getMessage(), e);
+                }
+
+                menuImg.setImg(filePath);  // 경로 설정
                 menuImgRepository.save(menuImg);
             }
         }

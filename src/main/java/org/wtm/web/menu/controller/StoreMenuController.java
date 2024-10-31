@@ -2,6 +2,7 @@ package org.wtm.web.menu.controller;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -9,6 +10,7 @@ import org.wtm.web.menu.dto.MenuRequestDto;
 import org.wtm.web.menu.dto.MenuResponseDto;
 import org.wtm.web.menu.service.MenuService;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -32,9 +34,13 @@ public class StoreMenuController {
                                      @ModelAttribute MenuRequestDto menuRequestDto,
                                      @RequestParam(value = "files", required = false) List<MultipartFile> files) {
         menuRequestDto.setFiles(files);
-        menuService.addMenu(storeId, menuRequestDto);
+
+        Long userId = 1L; // 테스트를 위해 userId를 1로 고정
+
+        menuService.addMenu(storeId, menuRequestDto, userId);
         return ResponseEntity.status(201).body("메뉴가 성공적으로 등록되었습니다.");
     }
+
 
 
 }
