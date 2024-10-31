@@ -21,6 +21,7 @@ import org.wtm.web.user.model.User;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,8 +64,12 @@ public class DefaultMenuService implements MenuService {
         // 오늘 날짜를 설정
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 Store를 찾을 수 없습니다: " + storeId));
+
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 User를 찾을 수 없습니다: " + userId));
+
+
         LocalDate today = LocalDate.now();
 
         // 해당 가게에 오늘의 Meal이 있는지 확인하고 없으면 생성
@@ -76,8 +81,6 @@ public class DefaultMenuService implements MenuService {
                     mealRepository.save(newMeal);
                     return newMeal;
                 });
-
-
 
         // 카테고리 조회
         MenuCategory mainCategory = menuCategoryRepository.findByName("Main Menu")
@@ -91,9 +94,10 @@ public class DefaultMenuService implements MenuService {
 
 
         // 메뉴 등록
-//
+
         menuRepository.save(menuMapper.toEntity(menuRequestDto.getMainMenu(), mainCategory, meal, store, user));
         menuRepository.save(menuMapper.toEntity(menuRequestDto.getSoupMenu(), soupCategory, meal, store, user));
+
 
 //        null일 경우 nullpointerException 발생 >> null 일경우 빈리스트로 초기화시키는 과정 필요 or optional 사용
         List<Menu> etcMenuEntities = menuMapper.toEntityList(menuRequestDto.getEtcMenus(), etcCategory, meal, store, user);
@@ -106,10 +110,10 @@ public class DefaultMenuService implements MenuService {
                 menuImg.setMeal(meal);
 
                 // 서버에 파일 저장 경로 설정
-                String filePath = "/res/menuImg/" + file.getOriginalFilename();
+                String filePath = "/res/menuImgs/" + file.getOriginalFilename();
                 File destinationFile = new File(filePath);
                 try {
-                    file.transferTo(destinationFile); // 실제 파일 저장
+                    file.transferTo(destinationFile);  // 실제 파일 저장
                 } catch (IOException e) {
                     throw new RuntimeException("파일 저장 중 오류가 발생했습니다: " + e.getMessage(), e);
                 }

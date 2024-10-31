@@ -20,9 +20,6 @@ import java.util.stream.Collectors;
 public class MenuMapper {
 
     public Menu toEntity(String menuName, MenuCategory category, Meal meal, Store store, User user) {
-        if (menuName == null || menuName.isEmpty()) {
-            throw new IllegalArgumentException("메뉴 이름이 비어 있습니다.");
-        }
         return Menu.builder()
                 .name(menuName)
                 .category(category)

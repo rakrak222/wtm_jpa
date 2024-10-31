@@ -6,9 +6,11 @@ import org.wtm.web.store.model.Store;
 import org.wtm.web.common.entity.BaseTimeEntity;
 import org.wtm.web.user.model.User;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "MENU")
-@Getter
+@Getter @Setter
 @Builder
 @ToString(exclude = {"meal", "store", "user", "category"})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -38,4 +40,13 @@ public class Menu extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private MenuCategory category;
+
+    public Menu(String name, MenuCategory category, Meal meal, Store store) {
+        this.name = name;
+        this.category = category;
+        this.meal = meal;
+        this.store = store;
+        this.regDate = LocalDateTime.now();
+        this.modDate = LocalDateTime.now();
+    }
 }

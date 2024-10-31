@@ -37,13 +37,10 @@ public class StoreMenuController {
 
         Long userId = 1L; // 테스트를 위해 userId를 1로 고정
 
-        try {
-            menuService.addMenu(storeId, menuRequestDto, userId);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("파일 저장 중 오류가 발생했습니다.");
-        }
+        menuService.addMenu(storeId, menuRequestDto, userId);
         return ResponseEntity.status(201).body("메뉴가 성공적으로 등록되었습니다.");
     }
+
 
 
 }
