@@ -32,7 +32,7 @@ public class DefaultUserService implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
 
-    @Value("${image.upload-profile-dir}")
+    @Value("${image.upload-menu-dir}")
     private String uploadDir;
 
     public String login(LoginRequestDto loginRequestDto){
