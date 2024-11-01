@@ -4,8 +4,11 @@ import org.springframework.stereotype.Component;
 import org.wtm.web.admin.dto.review.ReviewDto;
 import org.wtm.web.review.dto.ReviewCommentDto;
 import org.wtm.web.review.dto.ReviewListDto;
+import org.wtm.web.review.dto.ReviewScoreDto;
 import org.wtm.web.review.model.Review;
 import org.wtm.web.review.model.ReviewScore;
+import org.wtm.web.store.model.Store;
+import org.wtm.web.user.model.User;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,4 +45,14 @@ public class ReviewMapper {
                 .orElse(0.0);
     }
 
+
+    public Review toEntity(String reviewContent, boolean revisit, Store store, User user) {
+        return Review.builder()
+                .content(reviewContent)
+                .revisit(revisit)
+                .store(store)
+                .user(user)
+                .build();
+
+    }
 }

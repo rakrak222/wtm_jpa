@@ -33,7 +33,7 @@ public class StoreMenuController {
     public ResponseEntity<?> addMenu(@PathVariable Long storeId,
                                      @ModelAttribute MenuRequestDto menuRequestDto,
                                      @RequestParam(value = "files", required = false) List<MultipartFile> files) {
-        menuRequestDto.setFiles(files);
+        menuRequestDto.setMenuImages(files);
 
         Long userId = 1L; // 테스트를 위해 userId를 1로 고정
 

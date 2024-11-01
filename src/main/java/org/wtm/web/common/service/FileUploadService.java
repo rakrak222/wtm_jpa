@@ -3,7 +3,9 @@ package org.wtm.web.common.service;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -61,6 +63,45 @@ public class FileUploadService implements UploadService{
             return fileName.substring(fileName.lastIndexOf("."));
         }
         return "";
+    }
+
+    @Override
+    public List<String> uploadFiles(List<MultipartFile> files, String uploadDirType) {
+        List<String> filePaths = new ArrayList<>();
+
+        // 날짜별 폴더 생성 한번만 수행
+        String dateFolder = new SimpleDateFormat("yyyy" + File.separator + "MM" + File.separator + "dd").format(new Date());
+        String directoryPath = fileUploadProperties.getBaseUploadDir() + File.separator + uploadDirType + File.separator + dateFolder;
+
+        synchronized (this) {
+            File directory = new File(directoryPath);
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+        }
+
+        for (MultipartFile file : files) {
+            if (file == null || file.isEmpty()) {
+                filePaths.add(null);
+            }else {
+                try {
+
+                    String uuid = UUID.randomUUID().toString();
+                    String originalFileExtension = getFileExtension(file.getOriginalFilename());
+                    String newFileName = uuid + originalFileExtension;
+
+                    String filePath = directoryPath + File.separator + newFileName;
+
+                    File dest = new File(filePath);
+                    file.transferTo(dest);
+
+                    filePaths.add(filePath);
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to upload file", e);
+                }
+            }
+        }
+        return filePaths;
     }
 }
 

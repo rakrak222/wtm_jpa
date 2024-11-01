@@ -12,5 +12,5 @@ public class MenuRequestDto {
     private String mainMenu;
     private String soupMenu;
     private List<String> etcMenus;
-    private List<MultipartFile> files;
+    private List<MultipartFile> menuImages;
 }

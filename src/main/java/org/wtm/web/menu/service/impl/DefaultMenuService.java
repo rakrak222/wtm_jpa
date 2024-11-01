@@ -3,10 +3,13 @@ package org.wtm.web.menu.service.impl;
 
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.wtm.web.common.repository.*;
+import org.wtm.web.common.service.UploadService;
 import org.wtm.web.menu.dto.MenuRequestDto;
 import org.wtm.web.menu.dto.MenuResponseDto;
 import org.wtm.web.menu.mapper.MenuMapper;
@@ -36,6 +39,12 @@ public class DefaultMenuService implements MenuService {
     private final StoreRepository storeRepository;
     private final MenuMapper menuMapper;
     private final UserRepository userRepository;
+    private final UploadService uploadService;
+
+    @Value("${image.upload-menu-dir}")
+    private String uploadDir;
+
+
 
     @Override
     public MenuResponseDto getTodayMenusByStoreId(Long storeId) {
@@ -61,15 +70,13 @@ public class DefaultMenuService implements MenuService {
     @Override
     @Transactional
     public void addMenu(Long storeId, MenuRequestDto menuRequestDto, Long userId) {
-        // 오늘 날짜를 설정
+
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 Store를 찾을 수 없습니다: " + storeId));
-
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 User를 찾을 수 없습니다: " + userId));
 
-
+        // 오늘 날짜를 설정
         LocalDate today = LocalDate.now();
 
         // 해당 가게에 오늘의 Meal이 있는지 확인하고 없으면 생성
@@ -93,7 +100,6 @@ public class DefaultMenuService implements MenuService {
 
 
 
-
         // 메뉴 등록
 
         menuRepository.save(menuMapper.toEntity(menuRequestDto.getMainMenu(), mainCategory, meal, store, user));
@@ -105,26 +111,41 @@ public class DefaultMenuService implements MenuService {
         menuRepository.saveAll(etcMenuEntities);
 
         // 이미지 저장
-        if (menuRequestDto.getFiles() != null) {
-            for (MultipartFile file : menuRequestDto.getFiles()) {
-                try {
-                    // File 경로 설정 및 파일 저장
-                    String filePath = "/res/menuImgs/" + file.getOriginalFilename();
-                    File destinationFile = new File(filePath);
-                    file.transferTo(destinationFile);
+        if (menuRequestDto.getMenuImages() != null) {
 
-                    // MenuImg 객체 생성
-                    MenuImg menuImg = MenuImg.builder()
-                            .meal(meal)
-                            .img(filePath)
-                            .build();
 
-                    menuImgRepository.save(menuImg);
-                } catch (IOException e) {
-                    throw new RuntimeException("파일 저장 중 오류가 발생했습니다: " + e.getMessage(), e);
-                }
+            for (MultipartFile menuImage : menuRequestDto.getMenuImages()) {
+                String savedFileUrl = uploadService.uploadFile(menuImage, uploadDir);
+                MenuImg menuImg = MenuImg.builder()
+                        .meal(meal)
+                        .img(savedFileUrl)
+                        .build();
+                menuImgRepository.save(menuImg);
             }
         }
+
+
+//        // 이미지 저장
+//        if (menuRequestDto.getFiles() != null) {
+//            for (MultipartFile file : menuRequestDto.getFiles()) {
+//                try {
+//                    // File 경로 설정 및 파일 저장
+//                    String filePath = "/res/menuImgs/" + file.getOriginalFilename();
+//                    File destinationFile = new File(filePath);
+//                    file.transferTo(destinationFile);
+//
+//                    // MenuImg 객체 생성
+//                    MenuImg menuImg = MenuImg.builder()
+//                            .meal(meal)
+//                            .img(filePath)
+//                            .build();
+//
+//                    menuImgRepository.save(menuImg);
+//                } catch (IOException e) {
+//                    throw new RuntimeException("파일 저장 중 오류가 발생했습니다: " + e.getMessage(), e);
+//                }
+//            }
+//        }
     }
 
 }
