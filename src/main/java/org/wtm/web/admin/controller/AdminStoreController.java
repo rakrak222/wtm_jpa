@@ -3,8 +3,11 @@ package org.wtm.web.admin.controller;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.wtm.web.admin.dto.dashboard.DashboardDto;
+import org.wtm.web.admin.dto.info.StoreInfoDto;
+import org.wtm.web.admin.dto.info.StoreInfoUpdateDto;
 import org.wtm.web.admin.dto.notice.NoticeListDto;
 import org.wtm.web.admin.service.AdminStoreService;
 
@@ -27,6 +30,30 @@ public class AdminStoreController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
+
+    @GetMapping("/stores/{storeId}/info")
+    public ResponseEntity<?> getInfo(@PathVariable("storeId") Long storeId) {
+        try {
+            StoreInfoDto storeInfoDto = adminStoreService.getStoreInfoByStoreId(storeId);
+            return new ResponseEntity<>(storeInfoDto, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PutMapping("/stores/{storeId}/info")
+    public ResponseEntity<?> updateInfo(
+            @PathVariable("storeId") Long storeId,
+            @RequestBody StoreInfoUpdateDto dto) {
+        try {
+            adminStoreService.updateStoreInfoByStoreId(storeId, dto);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+
 }
 
 // 데이터
