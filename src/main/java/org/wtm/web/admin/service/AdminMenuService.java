@@ -21,5 +21,13 @@ public interface AdminMenuService {
      */
     public MenuResponseDto addMenu(Long storeId, MenuRequestDto menuRequestDto, List<MultipartFile> imgs) throws IOException;
 
+    /**
+     * 메뉴 수정
+     */
+    public MenuResponseDto updateMenu(Long storeId, Long menuId, MenuRequestDto menuRequestDto, List<MultipartFile> imgs) throws IOException;
 
+    /**
+     * 메뉴 삭제
+     */
+    public void deleteMenu(Long storeId, Long menuId);
 }

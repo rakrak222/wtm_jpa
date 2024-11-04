@@ -2,7 +2,7 @@ package org.wtm.web.admin.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.wtm.web.admin.dto.menu.MenuListDto;
+import org.wtm.web.menu.model.Meal;
 import org.wtm.web.menu.model.Menu;
 
 import java.util.List;
@@ -14,4 +14,6 @@ public interface AdminMenuRepository extends JpaRepository<Menu, Long> {
             "join fetch m.store s " +
             "where m.store.id = :storeId")
     List<Menu> findByStoreId(Long storeId);
+
+    List<Menu> findAllByMeal(Meal meal);
 }
