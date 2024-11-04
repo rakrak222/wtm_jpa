@@ -20,7 +20,7 @@ import java.util.List;
 @Getter
 @Builder
 @ToString(exclude = "store")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor//(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Meal extends BaseTimeEntity {
 
@@ -36,7 +36,7 @@ public class Meal extends BaseTimeEntity {
 
     @Column(name = "meal_date", nullable = false)
     private LocalDate mealDate;
-
+  
     @OneToMany(mappedBy = "meal")
     private List<MenuImg> menuImg = new ArrayList<>();
 }
