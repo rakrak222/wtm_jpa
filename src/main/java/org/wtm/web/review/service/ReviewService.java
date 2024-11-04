@@ -11,5 +11,5 @@ public interface ReviewService {
 
     ReviewStatsDto getReviewStats(Long storeId);
 
-    void addReview(Long storeId, ReviewRequestDto reviewRequestDto, List<ReviewScoreDto> scores, List<MultipartFile> files, Long userId);
+    void addReview(Long storeId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files, Long userId);
 }

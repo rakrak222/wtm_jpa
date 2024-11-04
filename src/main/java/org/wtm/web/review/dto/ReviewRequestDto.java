@@ -13,4 +13,5 @@ import java.util.List;
 public class ReviewRequestDto {
     private boolean revisit;
     private String reviewContent;
+    private List<ReviewScoreDto> reviewScoresDtos;
 }

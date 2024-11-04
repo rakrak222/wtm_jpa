@@ -73,14 +73,13 @@ public class ReviewController {
 
     @PostMapping("{storeId}/reviews")
     public ResponseEntity<?> addReview(@PathVariable Long storeId,
-                                       @RequestPart("reviewRequestDto") ReviewRequestDto reviewRequestDto, // JSON으로 받음
-                                       @RequestParam List<ReviewScoreDto> scores, // JSON으로 받음
+                                       @ModelAttribute ReviewRequestDto reviewRequestDto,
                                        @RequestParam(value = "files", required = false) List<MultipartFile> files) {
 
         Long userId = 1L; // 테스트를 위해 userId를 1로 고정
 
         // Separate handling of scores and files if needed
-        reviewService.addReview(storeId, reviewRequestDto, scores, files, userId);
+        reviewService.addReview(storeId, reviewRequestDto, files, userId);
         return ResponseEntity.status(201).body("리뷰가 성공적으로 등록되었습니다.");
     }
 

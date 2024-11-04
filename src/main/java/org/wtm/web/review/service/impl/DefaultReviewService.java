@@ -23,6 +23,7 @@ import org.wtm.web.review.service.ReviewService;
 import org.wtm.web.store.model.Store;
 import org.wtm.web.user.model.User;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -72,7 +73,7 @@ public class DefaultReviewService implements ReviewService {
     }
 
     @Override
-    public void addReview(Long storeId, ReviewRequestDto reviewRequestDto, List<ReviewScoreDto> scores, List<MultipartFile> files, Long userId) {
+    public void addReview(Long storeId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files, Long userId) {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 Store를 찾을수 없습니다."));
         User user = userRepository.findById(userId)
@@ -91,6 +92,7 @@ public class DefaultReviewService implements ReviewService {
 
 //      리뷰 점수 등록
 //      리뷰카테고리 1,2,3,4 돌아가며 review 저장
+        List<ReviewScoreDto> scores = reviewRequestDto.getReviewScoresDtos();
         for (ReviewScoreDto score : scores){
 
 
@@ -106,13 +108,16 @@ public class DefaultReviewService implements ReviewService {
         if (files != null) {
 
             List<String> images = uploadService.uploadFiles(files, uploadDir);
+            List<ReviewImg> reviewImgs = new ArrayList<>();
+
             for (String image : images) {
                 ReviewImg reviewImg = ReviewImg.builder()
                         .img(image)
                         .review(review)
                         .build();
-                reviewImgRepository.save(reviewImg);
+                reviewImgs.add(reviewImg);
             }
+            reviewImgRepository.saveAll(reviewImgs);
         }
 
     }
