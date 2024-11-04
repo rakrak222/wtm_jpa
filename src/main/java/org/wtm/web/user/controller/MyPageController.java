@@ -3,6 +3,7 @@ package org.wtm.web.user.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.wtm.web.user.dto.UserUpdateDto;
@@ -49,8 +50,8 @@ public class MyPageController {
     }
 
     // 사용자 정보 업데이트
-    @PutMapping("/settings")
-    public ResponseEntity<String> updateMySettings(@RequestBody UserUpdateDto userUpdateDto) {
+    @PutMapping(value = "/settings", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> updateMySettings(@ModelAttribute UserUpdateDto userUpdateDto) {
         boolean result = myPageService.updateMySettings(userUpdateDto);
 
         if (result){

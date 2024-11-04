@@ -2,11 +2,14 @@ package org.wtm.web.user.service.impl;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.wtm.web.bookmark.model.Bookmark;
 import org.wtm.web.common.repository.*;
+import org.wtm.web.common.service.UploadService;
 import org.wtm.web.review.model.Review;
 import org.wtm.web.store.model.Store;
 import org.wtm.web.ticket.model.Ticket;
@@ -34,6 +37,8 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class DefaultMyPageService implements MyPageService {
 
+    private final UploadService uploadService;
+
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
     private final StoreRepository storeRepository;
@@ -42,6 +47,9 @@ public class DefaultMyPageService implements MyPageService {
     private final TicketHistoryPurchaseRepository ticketHistoryPurchaseRepository;
     private final TicketHistoryUsageRepository ticketHistoryUsageRepository;
     private final ReviewScoreRepository reviewScoreRepository;
+
+    @Value("${image.upload-profile-dir}")
+    private String uploadDir;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -76,7 +84,13 @@ public class DefaultMyPageService implements MyPageService {
             existedUser.updateName(userUpdateDto.getName());
             existedUser.updateAddress(userUpdateDto.getAddress());
             existedUser.updatePhone(userUpdateDto.getPhone());
-            existedUser.updateProfilePicture(userUpdateDto.getProfilePicture());
+
+            // 프로필 사진 업로드 처리
+            MultipartFile file = userUpdateDto.getProfilePicture();
+            if (file != null) {  // 파일이 null이 아니고 비어있지 않으면
+                String savedFileUrl = uploadService.uploadFile(file, uploadDir);
+                existedUser.updateProfilePicture(savedFileUrl);
+            }
 
             // 비밀번호 인코딩 처리
             String encodedPassword = passwordEncoder.encode(userUpdateDto.getPassword());
