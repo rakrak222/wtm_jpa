@@ -6,8 +6,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.wtm.web.user.dto.UserUpdateDto;
+import org.wtm.web.user.dto.bookmark.BookmarkDto;
+import org.wtm.web.user.dto.review.UserReviewDto;
+import org.wtm.web.user.dto.ticket.TicketAllHistoryDto;
+import org.wtm.web.user.dto.ticket.TicketPurchaseDto;
+import org.wtm.web.user.dto.ticket.TicketSummaryDto;
+import org.wtm.web.user.dto.ticket.TicketUsageDto;
 import org.wtm.web.user.service.MyPageService;
 import org.wtm.web.user.dto.UserResponseDto;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/user/my")
@@ -40,5 +48,110 @@ public class MyPageController {
         }
     }
 
+    // 사용자 정보 업데이트
+    @PutMapping("/settings")
+    public ResponseEntity<String> updateMySettings(@RequestBody UserUpdateDto userUpdateDto) {
+        boolean result = myPageService.updateMySettings(userUpdateDto);
+
+        if (result){
+            return ResponseEntity.ok().body("User settings updated successfully"); // 200 OK와 함께 데이터 반환
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
+    }
+
+    // 사용자가 소유한 티켓의 가게 목록 조회
+    @GetMapping("/tickets")
+    public ResponseEntity<List<TicketSummaryDto>> getTicketsOwnedByUser(@RequestParam("userId") Long id) {
+        List<TicketSummaryDto> ticketListInfo = myPageService.getTicketsOwnedByUser(id);
+
+        if (ticketListInfo != null) {
+            return ResponseEntity.ok(ticketListInfo); // 200 OK와 함께 데이터 반환
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
+        }
+    }
+
+    // 티켓 사용 (나중엔 store_id만 남겨보자 ~)
+    @PostMapping("/tickets/stores")
+    public ResponseEntity<String> useMyTicket(@RequestBody TicketUsageDto ticketUsageDto) {
+        boolean result = myPageService.useMyTicket(ticketUsageDto);
+        if (result){
+            return ResponseEntity.ok().body("Succeed to use ticket"); // 200 OK와 함께 데이터 반환
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
+    }
+
+    // 티켓 충전
+    @PostMapping("/tickets/stores/charge")
+    public ResponseEntity<String> purchaseMyTicket(@RequestBody TicketPurchaseDto ticketPurchaseDto) {
+        boolean result = myPageService.purchaseMyTicket(ticketPurchaseDto);
+        if (result){
+            return ResponseEntity.ok().body("Succeed to purchase ticket"); // 200 OK와 함께 데이터 반환
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
+    }
+
+    // 사용자의 모든 티켓 구매 사용 내역 조회
+    @GetMapping("/tickets/history")
+    public ResponseEntity<List<TicketAllHistoryDto>> getMyTicketHistory(
+            @RequestParam("userId") Long userId,
+            @RequestParam("month") int month,
+            @RequestParam("year") int year) {
+
+        List<TicketAllHistoryDto> ticketAllHistoryDto = myPageService.getMyTicketHistory(userId, month, year);
+
+        if (ticketAllHistoryDto != null){
+            return ResponseEntity.ok(ticketAllHistoryDto); // 200 OK와 함께 데이터 반환
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
+    }
+
+    // 사용자의 특정 가게 티켓 구매 사용 내역 조회
+    @GetMapping("/tickets/store-history")
+    public ResponseEntity<List<TicketAllHistoryDto>> getMyTicketHistoryByStore(
+            @RequestParam("userId") Long userId,
+            @RequestParam("storeId") Long storeId,
+            @RequestParam("month") int month,
+            @RequestParam("year") int year
+    ) {
+        List<TicketAllHistoryDto> ticketAllHistoryDto = myPageService.getMyTicketHistoryByStore(userId, storeId, month, year);
+        if (ticketAllHistoryDto != null){
+            return ResponseEntity.ok(ticketAllHistoryDto); // 200 OK와 함께 데이터 반환
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
+    }
+
+    // 본인 리뷰 목록 조회
+    @GetMapping("/reviews")
+    public ResponseEntity<List<UserReviewDto>> getMyReviews(@RequestParam("userId") Long userId) {
+        List<UserReviewDto> userReviewDto = myPageService.getMyReviews(userId);
+        if (userReviewDto != null){
+            return ResponseEntity.ok(userReviewDto); // 200 OK와 함께 데이터 반환
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
+
+    }
+    //
+//    // 사용자 개인 북마크 조회
+    @GetMapping("/bookmarks")
+    public ResponseEntity<List<BookmarkDto>> getMyBookmarks(@RequestParam("userId") Long userId) {
+        List<BookmarkDto> bookmarkDto = myPageService.getMyBookmarks(userId);
+        if (bookmarkDto != null){
+            return ResponseEntity.ok(bookmarkDto); // 200 OK와 함께 데이터 반환
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
+    }
+
+    //    // 사용자가 본인 리뷰 삭제
+    @DeleteMapping("/reviews")
+    public ResponseEntity<String> deleteMyReview(@RequestParam("reviewId") Long reviewId) {
+        boolean result = myPageService.deleteMyReview(reviewId);
+
+        if (result) {
+            return ResponseEntity.ok().body("Successfully delete review"); // 200 OK와 함께 데이터 반환
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
+    }
 
 }
+
