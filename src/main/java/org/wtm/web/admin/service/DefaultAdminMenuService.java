@@ -1,7 +1,6 @@
 package org.wtm.web.admin.service;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.tomcat.util.http.fileupload.FileUpload;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,16 +18,9 @@ import org.wtm.web.menu.model.MenuImg;
 import org.wtm.web.store.model.Store;
 import org.wtm.web.user.model.User;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +38,7 @@ public class DefaultAdminMenuService implements AdminMenuService{
     @Value("${image.upload-menu-dir}")
     String uploadDir;
 
+
     @Override
     @Transactional
     public List<MenuListDto> getMenusByStoreId(Long storeId) {
@@ -56,6 +49,7 @@ public class DefaultAdminMenuService implements AdminMenuService{
     }
 
     @Override
+    @Transactional
     public MenuResponseDto addMenu(Long storeId, MenuRequestDto menuRequestDto, List<MultipartFile> imgs) throws IOException {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("Store not found"));
@@ -111,62 +105,100 @@ public class DefaultAdminMenuService implements AdminMenuService{
         return response;
     }
 
+    @Override
+    @Transactional
+    public MenuResponseDto updateMenu(Long storeId, Long menuId, MenuRequestDto menuRequestDto, List<MultipartFile> imgs) throws IOException {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("Store not found"));
+        Menu menu = menuRepository.findById(menuId)
+                .orElseThrow(() -> new IllegalArgumentException("Menu not found"));
+        Meal meal = mealRepository.findByStoreAndMealDate(store, menuRequestDto.getMealCreateDto().getMealDate())
+                .orElseThrow(() -> new IllegalArgumentException("Meal not found"));
 
-//    @Override
-//    @Transactional
-//    public MenuResponseDto addMenu(Long storeId, MealCreateDto mealCreateDto, List<MenuCreateDto> menuCreateDtos, List<MenuImgCreateDto> menuImgCreateDtos) throws IOException {
-//        Store store = storeRepository.findById(storeId)
-//                .orElseThrow(() -> new IllegalArgumentException("해당 스토어를 찾을 수 없습니다."));
-//
-//        Meal meal = Meal.builder()
-//                .store(store)
-//                .mealDate(mealCreateDto.getMealDate())
-//                .build();
-//
-//        List<Menu> menus = menuCreateDtos.stream().map(menuCreateDto -> {
-//            MenuCategory category = menuCategoryRepository.findById(menuCreateDto.getCategoryId())
-//                    .orElseThrow(()-> new IllegalArgumentException("일치하는 카테고리 ID가 없습니다."));
-//
-//            User user = userRepository.findById(menuCreateDto.getUserId())
-//                    .orElseThrow(() -> new IllegalArgumentException("일치하는 회원 ID가 없습니다."));
-//
-//            return Menu.builder()
-//                    .store(store)
-//                    .name(menuCreateDto.getName())
-//                    .user(user)
-//                    .category(category)
-//                    .meal(meal)
-//                    .build();
-//        }).toList();
-//
-//        menuRepository.saveAll(menus);
-//
-//        //===================== 메뉴 이미지 저장 로직 ========================
-//
-//        Path directoryPath = Paths.get(uploadDir);
-//        if (!Files.exists(directoryPath)) {
-//            Files.createDirectories(directoryPath);
-//        }
-//
-//        for (MenuImgCreateDto dto : menuImgCreateDtos) {
-//            MultipartFile img = dto.getImg();
-//            if (!img.isEmpty()) {
-//                String originalFileName = img.getOriginalFilename();
-//                String filePath = uploadDir + File.separator + originalFileName;
-//
-//                img.transferTo(new File(filePath));
-//                System.out.println("파일 저장 위치: " + filePath);
-//
-//                MenuImg menuImg = MenuImg.builder()
-//                        .img(filePath)
-//                        .meal(meal)
-//                        .build();
-//
-//                menuImgRepository.save(menuImg);
-//            }
-//        }
-//
-//
-//    }
+        // 메뉴 업데이트 로직: 입력된 DTO의 메뉴 이름과 카테고리를 기존 데이터와 비교하여 변경 사항만 업데이트
+        for (MenuCreateDto menuCreateDto : menuRequestDto.getMenuCreateDtos()) {
+            if (!menu.getName().equals(menuCreateDto.getName())) {
+                menu = Menu.builder()
+                        .id(menu.getId())  // 기존 ID 유지
+                        .name(menuCreateDto.getName())
+                        .meal(meal)
+                        .store(store)
+                        .user(menu.getUser())  // 기존 User 유지
+                        .category(menu.getCategory())  // 기존 카테고리 유지 (변경 사항 확인 후 업데이트)
+                        .build();
+            }
+
+            // 카테고리 변경 확인
+            if (menu.getCategory() == null || !menu.getCategory().getId().equals(menuCreateDto.getCategoryId())) {
+                MenuCategory category = categoryRepository.findById(menuCreateDto.getCategoryId())
+                        .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+                menu = Menu.builder()
+                        .id(menu.getId())
+                        .name(menu.getName())
+                        .meal(meal)
+                        .store(store)
+                        .user(menu.getUser())
+                        .category(category)
+                        .build();
+            }
+        }
+
+        // 이미지 업데이트 로직
+        if (!imgs.isEmpty()) {
+            // 기존 이미지 삭제 후 새로운 이미지 저장
+            menuImgRepository.deleteAllByMeal(meal);
+
+            List<String> savedImgsUrl = uploadService.uploadFiles(imgs, uploadDir);
+            List<MenuImg> menuImgs = new ArrayList<>();
+            for (String imgUrl : savedImgsUrl) {
+                MenuImg menuImg = MenuImg.builder()
+                        .meal(meal)
+                        .img(imgUrl)
+                        .build();
+                menuImgs.add(menuImg);
+            }
+            menuImgRepository.saveAll(menuImgs);
+        }
+
+        // 변경된 Menu 저장
+        menuRepository.save(menu);
+
+        return MenuResponseDto.builder().message("Menu updated successfully").build();
+    }
+
+    @Override
+    @Transactional
+    public void deleteMenu(Long storeId, Long menuId) {
+        // Store 검증
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("Store not found"));
+
+        // Menu 검증
+        Menu menu = menuRepository.findById(menuId)
+                .orElseThrow(() -> new IllegalArgumentException("Menu not found"));
+
+        // Store와 Menu의 관계 확인
+        if (!menu.getStore().equals(store)) {
+            throw new IllegalArgumentException("Menu does not belong to the specified store");
+        }
+
+        // Menu와 연결된 이미지 삭제
+        List<MenuImg> menuImgs = menuImgRepository.findAllByMeal(menu.getMeal());
+        menuImgRepository.deleteAll(menuImgs);
+
+        // Menu 삭제
+        menuRepository.delete(menu);
+
+        // Meal과 연결된 다른 Menu가 있는지 확인
+        Meal meal = menu.getMeal();
+        List<Menu> remainingMenus = menuRepository.findAllByMeal(meal);
+        if (remainingMenus.isEmpty()) {
+            // 다른 Menu가 없으면 Meal 삭제
+            mealRepository.delete(meal);
+        }
+    }
+
+
+
 
 }
