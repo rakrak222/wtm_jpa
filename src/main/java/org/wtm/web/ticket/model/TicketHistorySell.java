@@ -16,6 +16,7 @@ public class TicketHistorySell extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ticket_history_sell_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -6,6 +6,8 @@ import org.wtm.web.store.model.Store;
 import org.wtm.web.common.entity.BaseTimeEntity;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(
@@ -31,7 +33,10 @@ public class Meal extends BaseTimeEntity {
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
+
     @Column(name = "meal_date", nullable = false)
     private LocalDate mealDate;
 
+    @OneToMany(mappedBy = "meal")
+    private List<MenuImg> menuImg = new ArrayList<>();
 }
