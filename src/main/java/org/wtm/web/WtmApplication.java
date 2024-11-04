@@ -17,4 +17,5 @@ public class WtmApplication {
     public static void main(String[] args) {
         SpringApplication.run(WtmApplication.class, args);
     }
+
 }

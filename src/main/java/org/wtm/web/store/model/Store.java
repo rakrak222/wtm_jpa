@@ -2,10 +2,14 @@ package org.wtm.web.store.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.wtm.web.bookmark.model.Bookmark;
 import org.wtm.web.common.entity.BaseTimeEntity;
+import org.wtm.web.review.model.Review;
+import org.wtm.web.ticket.model.Ticket;
 import org.wtm.web.user.model.User;
 
 import java.time.LocalTime;
+import java.util.List;
 
 @Entity
 @Table(name = "STORE")
@@ -42,4 +46,16 @@ public class Store extends BaseTimeEntity {
 
     @Column
     private String img;
+
+    @OneToMany(mappedBy = "store")
+    private List<Ticket> tickets;
+
+    @OneToMany(mappedBy = "store")
+    private List<Bookmark> bookmarks; // 북마크와의 관계
+
+    @OneToMany(mappedBy = "store")
+    private List<Review> reviews; // 리뷰와의 관계
+
+    @OneToMany(mappedBy = "store")
+    private List<StoreSns> storeSnsList; // StoreSns와의 관계
 }
