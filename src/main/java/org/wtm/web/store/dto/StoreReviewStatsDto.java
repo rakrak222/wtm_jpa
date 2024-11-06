@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 @Builder
 public class StoreReviewStatsDto {
-    private Long storeId;
     private String storeName;
     private Long reviewCount;
     private Double averageReviewScore;

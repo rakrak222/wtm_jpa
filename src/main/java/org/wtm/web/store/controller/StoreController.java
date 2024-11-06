@@ -34,7 +34,7 @@ public class StoreController {
     }
     // 특정 가게 리뷰 요약 정보 조회
 
-    @GetMapping("/{storeId}/review-sumary")
+    @GetMapping("/{storeId}/review-summary")
     public ResponseEntity<?> getStoreReviewStats(@PathVariable("storeId") long storeId) {
         StoreReviewStatsDto storeStats = storeService.getStoreReviewStats(storeId);
         if (storeStats == null) {
