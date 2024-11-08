@@ -48,7 +48,7 @@ public class FileUploadService implements UploadService{
             File dest = new File(filePath);
             file.transferTo(dest);
 
-            // 서버 내부의 파일 절대 경로 반환 (DB에 저장할 값)
+            // 브라우저 접근 가능한 URL 추가
             return "/uploads/" + uploadDir + "/" + dateFolder + "/" + newFileName;
 
         } catch (IOException e) {
@@ -87,7 +87,8 @@ public class FileUploadService implements UploadService{
                       File dest = new File(filePath);
                       file.transferTo(dest);
 
-                      filePaths.add(filePath);
+                      // 브라우저 접근 가능한 URL 추가
+                      filePaths.add("/uploads/" + uploadDirType + "/" + dateFolder + "/" + newFileName);
                   } catch (IOException e) {
                       throw new RuntimeException("Failed to upload file", e);
                   }

@@ -1,6 +1,7 @@
 package org.wtm.web.common.repository;
 
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -27,4 +28,14 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @Query("SELECT COUNT(r) FROM Review r WHERE r.store.id = :storeId")
     int findReviewCountByStoreId(@Param("storeId") long storeId);
+
+    // added by jwhuh 2024-11-04
+    @Query("SELECT AVG(s.score)" +
+            "FROM Review r " +
+            "JOIN r.reviewScores s " +
+            "WHERE r.store.id = :storeId ")
+    Double calculateAvgByStoreId(@Param("storeId") Long storeId);
+
+    @EntityGraph(attributePaths = "store")
+    List<Review> findByUserId(Long userId);
 }

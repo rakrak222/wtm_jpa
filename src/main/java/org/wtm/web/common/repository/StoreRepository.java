@@ -33,4 +33,6 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
             "WHERE r.store.id = :storeId")
     List<Object[]> findReviewStateByStoreId(@Param("storeId") Long storeId);
 
+    // added by jwhuh 2024-11-04
+    List<Store> findByIdIn(List<Long> storeIds);
 }

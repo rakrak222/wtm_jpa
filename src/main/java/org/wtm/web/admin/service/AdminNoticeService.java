@@ -30,4 +30,8 @@ public interface AdminNoticeService {
      */
     public void deleteNotice(Long storeId, Long noticeId);
 
+    /**
+     * 특정 공지 수정을 위한 조회
+     */
+    NoticeDto getNoticeByStoreId(Long storeId, Long noticeId);
 }
