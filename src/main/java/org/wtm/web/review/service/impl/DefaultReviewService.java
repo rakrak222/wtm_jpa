@@ -83,43 +83,35 @@ public class DefaultReviewService implements ReviewService {
     }
 
     @Override
+    @Transactional
     public void addReview(Long storeId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files, Long userId) {
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new RuntimeException("해당 ID의 Store를 찾을수 없습니다."));
+                .orElseThrow(() -> new RuntimeException("해당 ID의 Store를 찾을 수 없습니다."));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 User를 찾을 수 없습니다: " + userId));
 
-
-        // 리뷰 내용, 재방문 여부 등록
+        // 리뷰 내용 및 재방문 여부 등록
         Review review = reviewMapper.toEntity(
                 reviewRequestDto.getReviewContent(),
                 reviewRequestDto.isRevisit(),
                 store,
                 user
         );
-
         review = reviewRepository.save(review);
 
-//      리뷰 점수 등록
-//      리뷰카테고리 1,2,3,4 돌아가며 review 저장
+        // 리뷰 점수 등록
         List<ReviewScoreDto> scores = reviewRequestDto.getReviewScoresDtos();
-        for (ReviewScoreDto score : scores){
-
-
+        for (ReviewScoreDto score : scores) {
             ReviewScale reviewScale = reviewScaleRepository.findById(score.getReviewScaleId())
                     .orElseThrow(() -> new NoSuchElementException("ReviewScale ID " + score.getReviewScaleId() + " not found"));
             ReviewScore reviewScore = reviewScoreMapper.toEntity(score.getReviewScore(), reviewScale, review);
-
             reviewScoreRepository.save(reviewScore);
         }
 
-
-//      리뷰 사진 등록
-        if (files != null) {
-
+        // 리뷰 사진 등록
+        if (files != null && !files.isEmpty()) {
             List<String> images = uploadService.uploadFiles(files, uploadDir);
             List<ReviewImg> reviewImgs = new ArrayList<>();
-
             for (String image : images) {
                 ReviewImg reviewImg = ReviewImg.builder()
                         .img(image)
@@ -129,7 +121,6 @@ public class DefaultReviewService implements ReviewService {
             }
             reviewImgRepository.saveAll(reviewImgs);
         }
-
     }
 
 }

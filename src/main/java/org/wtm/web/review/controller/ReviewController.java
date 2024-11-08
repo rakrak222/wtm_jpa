@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,6 +14,7 @@ import org.wtm.web.review.service.impl.DefaultReviewService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/stores")
@@ -81,15 +83,30 @@ public class ReviewController {
 //    }
 
     @PostMapping("{storeId}/reviews")
-    public ResponseEntity<?> addReview(@PathVariable Long storeId,
-                                       @ModelAttribute ReviewRequestDto reviewRequestDto,
-                                       @RequestParam(value = "files", required = false) List<MultipartFile> files) {
+    public ResponseEntity<?> addReview(
+            @PathVariable Long storeId,
+            @RequestParam("revisit") boolean revisit,
+            @RequestParam("reviewContent") String reviewContent,
+            @RequestParam("reviewScoresDtos") String scoresJson,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files) {
 
         Long userId = 1L; // 테스트를 위해 userId를 1로 고정
 
-        // Separate handling of scores and files if needed
+        // JSON 문자열을 DTO로 변환
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<ReviewScoreDto> scores;
+        try {
+            scores = objectMapper.readValue(scoresJson, new TypeReference<List<ReviewScoreDto>>() {});
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("점수 데이터를 변환하는 중 오류가 발생했습니다.");
+        }
+
+        // ReviewRequestDto 객체 생성
+        ReviewRequestDto reviewRequestDto = new ReviewRequestDto(revisit, reviewContent, scores);
+
+        // 리뷰 서비스 호출
         reviewService.addReview(storeId, reviewRequestDto, files, userId);
-        return ResponseEntity.status(201).body("리뷰가 성공적으로 등록되었습니다.");
+        return ResponseEntity.status(201).body(Map.of("message", "리뷰가 성공적으로 등록되었습니다."));
     }
 
 
