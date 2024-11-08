@@ -8,10 +8,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.wtm.web.common.repository.*;
 import org.wtm.web.common.service.UploadService;
 import org.wtm.web.menu.model.MenuImg;
-import org.wtm.web.review.dto.ReviewListDto;
-import org.wtm.web.review.dto.ReviewRequestDto;
-import org.wtm.web.review.dto.ReviewScoreDto;
-import org.wtm.web.review.dto.ReviewStatsDto;
+import org.wtm.web.review.dto.*;
+import org.wtm.web.review.mapper.ReviewCountMapper;
 import org.wtm.web.review.mapper.ReviewMapper;
 import org.wtm.web.review.mapper.ReviewScoreMapper;
 import org.wtm.web.review.mapper.ReviewStatsMapper;
@@ -59,6 +57,18 @@ public class DefaultReviewService implements ReviewService {
         // Mapper를 사용하여 DTO 생성
         return ReviewStatsMapper.toDto(overallAverageScore, scaleAverages);
 
+    }
+
+
+    @Override
+    public ReviewCountDto getReviewCount(long storeId) {
+
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new RuntimeException("해당 ID의 Store를 찾을수 없습니다."));
+        // 리뷰 개수
+        long reviewCount = reviewRepository.findReviewCountByStoreId(storeId);
+
+        return ReviewCountMapper.toDto(reviewCount);
     }
 
     /**
@@ -121,6 +131,5 @@ public class DefaultReviewService implements ReviewService {
         }
 
     }
-
 
 }

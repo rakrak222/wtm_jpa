@@ -1,6 +1,7 @@
 package org.wtm.web.review.service;
 
 import org.springframework.web.multipart.MultipartFile;
+import org.wtm.web.review.dto.ReviewCountDto;
 import org.wtm.web.review.dto.ReviewRequestDto;
 import org.wtm.web.review.dto.ReviewScoreDto;
 import org.wtm.web.review.dto.ReviewStatsDto;
@@ -12,4 +13,6 @@ public interface ReviewService {
     ReviewStatsDto getReviewStats(Long storeId);
 
     void addReview(Long storeId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files, Long userId);
+
+    ReviewCountDto getReviewCount(long storeId);
 }

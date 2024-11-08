@@ -30,6 +30,15 @@ public class ReviewController {
         return ResponseEntity.ok(reviewStats);
     }
 
+    @GetMapping("/{storeId}/review-count")
+    public ResponseEntity<?> getReviewCount(@PathVariable("storeId") long storeId) {
+        ReviewCountDto reviewCount = reviewService.getReviewCount(storeId);
+        if (reviewCount == null) {
+            return ResponseEntity.status(404).body("리뷰가 조회되지 않습니다.");
+        }
+        return ResponseEntity.ok(reviewCount);
+    }
+
 
     @GetMapping("/{storeId}/reviews")
     public ResponseEntity<List<ReviewListDto>> getReviews(@PathVariable Long storeId){

@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Entity
-@Table(name ="USERS")
+@Table(name ="USER")
 @Getter
 @Builder
 @ToString

@@ -49,7 +49,7 @@ public class FileUploadService implements UploadService{
             file.transferTo(dest);
 
             // 서버 내부의 파일 절대 경로 반환 (DB에 저장할 값)
-            return filePath;
+            return "/uploads/" + uploadDir + "/" + dateFolder + "/" + newFileName;
 
         } catch (IOException e) {
             // 파일 업로드에 실패 시 작업 반환
