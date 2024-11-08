@@ -31,7 +31,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             "FROM Review r " +
             "JOIN r.reviewScores s " +
             "WHERE r.store.id = :storeId ")
-    double calculateAvgByStoreId(@Param("storeId") Long storeId);
+    Double calculateAvgByStoreId(@Param("storeId") Long storeId);
 
     @EntityGraph(attributePaths = "store")
     List<Review> findByUserId(Long userId);

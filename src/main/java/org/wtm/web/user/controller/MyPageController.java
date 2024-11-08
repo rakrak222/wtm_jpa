@@ -9,10 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.wtm.web.user.dto.UserUpdateDto;
 import org.wtm.web.user.dto.bookmark.BookmarkDto;
 import org.wtm.web.user.dto.review.UserReviewDto;
-import org.wtm.web.user.dto.ticket.TicketAllHistoryDto;
-import org.wtm.web.user.dto.ticket.TicketPurchaseDto;
-import org.wtm.web.user.dto.ticket.TicketSummaryDto;
-import org.wtm.web.user.dto.ticket.TicketUsageDto;
+import org.wtm.web.user.dto.ticket.*;
 import org.wtm.web.user.service.MyPageService;
 import org.wtm.web.user.dto.UserResponseDto;
 
@@ -94,30 +91,30 @@ public class MyPageController {
 
     // 사용자의 모든 티켓 구매 사용 내역 조회
     @GetMapping("/tickets/history")
-    public ResponseEntity<List<TicketAllHistoryDto>> getMyTicketHistory(
+    public ResponseEntity<TicketHistoryResponseDto> getMyTicketHistory(
             @RequestParam("userId") Long userId,
             @RequestParam("month") int month,
             @RequestParam("year") int year) {
 
-        List<TicketAllHistoryDto> ticketAllHistoryDto = myPageService.getMyTicketHistory(userId, month, year);
+        TicketHistoryResponseDto ticketHistoryResponseDto = myPageService.getMyTicketHistory(userId, month, year);
 
-        if (ticketAllHistoryDto != null){
-            return ResponseEntity.ok(ticketAllHistoryDto); // 200 OK와 함께 데이터 반환
+        if (ticketHistoryResponseDto != null){
+            return ResponseEntity.ok(ticketHistoryResponseDto); // 200 OK와 함께 데이터 반환
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
     }
 
     // 사용자의 특정 가게 티켓 구매 사용 내역 조회
-    @GetMapping("/tickets/store-history")
-    public ResponseEntity<List<TicketAllHistoryDto>> getMyTicketHistoryByStore(
+    @GetMapping("/tickets/stores/history")
+    public ResponseEntity<TicketHistoryResponseDto> getMyTicketHistoryByStore(
             @RequestParam("userId") Long userId,
             @RequestParam("storeId") Long storeId,
             @RequestParam("month") int month,
             @RequestParam("year") int year
     ) {
-        List<TicketAllHistoryDto> ticketAllHistoryDto = myPageService.getMyTicketHistoryByStore(userId, storeId, month, year);
-        if (ticketAllHistoryDto != null){
-            return ResponseEntity.ok(ticketAllHistoryDto); // 200 OK와 함께 데이터 반환
+        TicketHistoryResponseDto ticketHistoryResponseDto = myPageService.getMyTicketHistoryByStore(userId, storeId, month, year);
+        if (ticketHistoryResponseDto != null){
+            return ResponseEntity.ok(ticketHistoryResponseDto); // 200 OK와 함께 데이터 반환
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
     }
@@ -139,6 +136,32 @@ public class MyPageController {
         List<BookmarkDto> bookmarkDto = myPageService.getMyBookmarks(userId);
         if (bookmarkDto != null){
             return ResponseEntity.ok(bookmarkDto); // 200 OK와 함께 데이터 반환
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
+    }
+
+    @PostMapping("/bookmarks")
+    public ResponseEntity<String> saveMyBookmark(
+            @RequestParam("storeId") Long storeId,
+            @RequestParam("userId") Long userId
+            ) {
+        boolean result = myPageService.saveMyBookmark(storeId, userId);
+
+        if (result) {
+            return ResponseEntity.ok().body("Successfully add bookmark"); // 200 OK와 함께 데이터 반환
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
+    }
+
+    @DeleteMapping("/bookmarks")
+    public ResponseEntity<String> deleteMyBookmark(
+            @RequestParam("storeId") Long storeId,
+            @RequestParam("userId") Long userId
+    ) {
+        boolean result = myPageService.deleteMyBookmark(storeId, userId);
+
+        if (result) {
+            return ResponseEntity.ok().body("Successfully delete bookmark"); // 200 OK와 함께 데이터 반환
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
     }
