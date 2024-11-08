@@ -1,17 +1,11 @@
 package org.wtm.web.user.service;
 
 import org.springframework.stereotype.Service;
-import org.wtm.web.bookmark.model.Bookmark;
-import org.wtm.web.review.model.Review;
-import org.wtm.web.ticket.model.Ticket;
 import org.wtm.web.user.dto.UserResponseDto;
 import org.wtm.web.user.dto.UserUpdateDto;
 import org.wtm.web.user.dto.bookmark.BookmarkDto;
 import org.wtm.web.user.dto.review.UserReviewDto;
-import org.wtm.web.user.dto.ticket.TicketAllHistoryDto;
-import org.wtm.web.user.dto.ticket.TicketPurchaseDto;
-import org.wtm.web.user.dto.ticket.TicketSummaryDto;
-import org.wtm.web.user.dto.ticket.TicketUsageDto;
+import org.wtm.web.user.dto.ticket.*;
 
 import java.util.List;
 
@@ -30,13 +24,17 @@ public interface MyPageService {
 
     boolean purchaseMyTicket(TicketPurchaseDto ticketPurchaseDto);
 
-    List<TicketAllHistoryDto> getMyTicketHistory(Long userId, int month, int year);
+    TicketHistoryResponseDto getMyTicketHistory(Long userId, int month, int year);
 
-    List<TicketAllHistoryDto> getMyTicketHistoryByStore(Long userId, Long storeId, int month, int year);
+    TicketHistoryResponseDto getMyTicketHistoryByStore(Long userId, Long storeId, int month, int year);
 
     List<UserReviewDto> getMyReviews(Long userId);
 
     List<BookmarkDto> getMyBookmarks(Long userId);
 
     boolean deleteMyReview(Long reviewId);
+
+    boolean saveMyBookmark(Long storeId, Long userId);
+
+    boolean deleteMyBookmark(Long storeId, Long userId);
 }

@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface ReviewScoreRepository extends JpaRepository<ReviewScore, Long> {
     // added by jwhuh 2024-11-04
-    @Query("SELECT COALESCE(SUM(rs.score) / 4.0, 0) FROM ReviewScore rs WHERE rs.review.id = :reviewId")
+    @Query("SELECT COALESCE(SUM(rs.score) / count(rs.score), 0) FROM ReviewScore rs WHERE rs.review.id = :reviewId")
     Double findAverageScoreByReviewId(@Param("reviewId") Long reviewId);
 
     List<ReviewScore> findByReviewId(Long id);

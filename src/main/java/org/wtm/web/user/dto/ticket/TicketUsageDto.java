@@ -8,5 +8,5 @@ public class TicketUsageDto {
     private Long userId;
     private Long storeId;
     private Long ticketId;
-    private int amount;
+    private Long amount;
 }

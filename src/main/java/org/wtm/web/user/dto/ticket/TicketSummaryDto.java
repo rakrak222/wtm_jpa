@@ -16,24 +16,24 @@ public class TicketSummaryDto {
     private Long storeId;
     private Long ticketId;
     private Long ticketPrice;
-    private int totalPurchasedTickets = 0;
-    private int totalUsedTickets = 0;
-    private int ticketAmount;
+    private Long totalPurchasedTickets;
+    private Long totalUsedTickets;
+    private Long ticketAmount;
     private double reviewAverage;
-    private boolean bookmarked = false;
+    private Boolean isBookmarked;
 
-    public void addPurchasedTickets(int amount) {
+    public void addPurchasedTickets(Long amount) {
         this.totalPurchasedTickets += amount;
         this.ticketAmount += amount;
     }
 
-    public void addUsedTickets(int amount) {
+    public void addUsedTickets(Long amount) {
         this.totalUsedTickets += amount;
         this.ticketAmount -= amount;
     }
 
     public void checkBookmark(boolean isBookmarked){
-        this.bookmarked = isBookmarked;
+        this.isBookmarked = isBookmarked;
     }
 
     public void addReviewAverage(double reviewAverage){
@@ -43,9 +43,9 @@ public class TicketSummaryDto {
     public static TicketSummaryDto form(
             Ticket ticket,
             Store store,
-            int totalPurchasedTickets,
-            int totalUsedTickets,
-            int ticketAmount,
+            Long totalPurchasedTickets,
+            Long totalUsedTickets,
+            Long ticketAmount,
             double reviewAverage
             ) {
         return TicketSummaryDto.builder()
