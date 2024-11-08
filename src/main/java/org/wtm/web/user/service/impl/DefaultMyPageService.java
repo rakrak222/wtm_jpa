@@ -10,7 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.wtm.web.bookmark.model.Bookmark;
 import org.wtm.web.common.repository.*;
 import org.wtm.web.common.service.UploadService;
-import org.wtm.web.menu.model.Meal;
 import org.wtm.web.review.model.Review;
 import org.wtm.web.store.model.Store;
 import org.wtm.web.ticket.model.Ticket;
@@ -160,7 +159,7 @@ public class DefaultMyPageService implements MyPageService {
         ticketListInfo.forEach(ticketInfo -> {
             Long storeId = ticketInfo.getStoreId();
 
-            double reviewAverage = reviewAvgMap.get(storeId);
+            Double reviewAverage = reviewAvgMap.get(storeId);
             ticketInfo.addReviewAverage(reviewAverage);
 
             boolean isBookmarked = bookmarkMap.getOrDefault(storeId, false);

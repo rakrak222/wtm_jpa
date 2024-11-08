@@ -19,7 +19,7 @@ public class TicketSummaryDto {
     private Long totalPurchasedTickets;
     private Long totalUsedTickets;
     private Long ticketAmount;
-    private double reviewAverage;
+    private Double reviewAverage;
     private Boolean isBookmarked;
 
     public void addPurchasedTickets(Long amount) {
@@ -36,7 +36,7 @@ public class TicketSummaryDto {
         this.isBookmarked = isBookmarked;
     }
 
-    public void addReviewAverage(double reviewAverage){
+    public void addReviewAverage(Double reviewAverage){
         this.reviewAverage = reviewAverage;
     }
 
@@ -46,7 +46,7 @@ public class TicketSummaryDto {
             Long totalPurchasedTickets,
             Long totalUsedTickets,
             Long ticketAmount,
-            double reviewAverage
+            Double reviewAverage
             ) {
         return TicketSummaryDto.builder()
                 .storeId(store.getId())

@@ -14,6 +14,6 @@ public class BookmarkDto {
     private Long storeId;
     private Long ticketId;
     private Long ticketPrice;
-    private double reviewAverage;
+    private Double reviewAverage;
     private Boolean isBookmarked;
 }
