@@ -20,6 +20,7 @@ public class AdminReviewMapper {
                 review.getContent(),
                 review.getUser().getName(),
                 review.getUser().getProfilePicture(),
+                review.getStore().getUser().getProfilePicture(),
                 toReviewCommentDtoList(review),
                 calculateAverageScore(review),
                 review.getRegDate()

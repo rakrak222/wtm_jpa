@@ -75,4 +75,15 @@ public class DefaultAdminNoticeService implements AdminNoticeService {
                 .orElseThrow(() -> new IllegalArgumentException("공지사항을 찾을 수 없습니다."));
         noticeRepository.delete(notice);
     }
+
+    /**
+     * 특정 공지 수정을 위한 조회
+     */
+    @Override
+    public NoticeDto getNoticeByStoreId(Long storeId, Long noticeId) {
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new IllegalArgumentException("공지사항을 찾을 수 없습니다."));
+
+        return noticeMapper.toNoticeDto(notice);
+    }
 }

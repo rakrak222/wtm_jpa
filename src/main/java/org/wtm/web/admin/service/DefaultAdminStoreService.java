@@ -1,13 +1,16 @@
 package org.wtm.web.admin.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.wtm.web.admin.dto.dashboard.DashboardDto;
 import org.wtm.web.admin.dto.info.StoreInfoDto;
 import org.wtm.web.admin.dto.info.StoreInfoUpdateDto;
 import org.wtm.web.admin.mapper.AdminStoreMapper;
 import org.wtm.web.admin.repository.*;
+import org.wtm.web.common.service.FileUploadService;
 import org.wtm.web.store.model.Store;
 import org.wtm.web.store.model.StoreSns;
 import org.wtm.web.user.model.User;
@@ -22,7 +25,10 @@ public class DefaultAdminStoreService implements AdminStoreService {
     private final AdminStoreMapper adminStoreMapper;
     private final AdminStoreSnsRepository storeSnsRepository;
     private final AdminUserRepository adminUserRepository;
+    private final FileUploadService uploadService;
 
+    @Value("${image.upload-profile-dir}")
+    String uploadDir;
 
     @Override
     @Transactional(readOnly = true)
@@ -63,7 +69,7 @@ public class DefaultAdminStoreService implements AdminStoreService {
 
     @Override
     @Transactional
-    public void updateStoreInfoByStoreId(Long storeId, StoreInfoUpdateDto updateDto) {
+    public void updateStoreInfoByStoreId(Long storeId, StoreInfoUpdateDto updateDto, MultipartFile img) {
         // 1. Store 정보 가져오기
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("스토어를 찾을 수 없습니다."));
@@ -75,9 +81,10 @@ public class DefaultAdminStoreService implements AdminStoreService {
         }
 
         // 2-1. User 프로필 사진 업데이트
-        if (updateDto.getProfilePicture() != null) {
-            user.updateProfilePicture(updateDto.getProfilePicture());
-            adminUserRepository.save(user); // 변경 사항 저장
+
+        if (img != null) {
+            String savedImgUrl = uploadService.uploadFile(img, uploadDir);
+            user.updateProfilePicture(savedImgUrl);
         }
 
         // 3. StoreSns 정보 가져오기
