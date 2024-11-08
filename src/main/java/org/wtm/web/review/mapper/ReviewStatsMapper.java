@@ -1,11 +1,13 @@
 package org.wtm.web.review.mapper;
 
+import org.springframework.stereotype.Component;
 import org.wtm.web.review.dto.ReviewScaleAverageDto;
 import org.wtm.web.review.dto.ReviewStatsDto;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Component
 public class ReviewStatsMapper {
 
     public static ReviewStatsDto toDto(Double overallAverageScore, List<Object[]> scaleAverages) {
