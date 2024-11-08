@@ -31,6 +31,17 @@ public class AdminNoticeController {
 
     }
 
+    @GetMapping("/stores/{storeId}/notices/{noticeId}")
+    public ResponseEntity<NoticeDto> getNotices(@PathVariable Long storeId, @PathVariable Long noticeId){
+        try {
+            NoticeDto notice = adminNoticeService.getNoticeByStoreId(storeId, noticeId);
+            return new ResponseEntity<>(notice, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+    }
+
     @PostMapping("/stores/{storeId}/notices")
     public ResponseEntity<?> createNotice(@PathVariable Long storeId, @RequestBody NoticeCreateDto noticeCreateDto){
         try {

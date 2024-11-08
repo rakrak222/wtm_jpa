@@ -1,10 +1,13 @@
 package org.wtm.web.admin.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.wtm.web.admin.dto.dashboard.DashboardDto;
 import org.wtm.web.admin.dto.info.StoreInfoDto;
 import org.wtm.web.admin.dto.info.StoreInfoUpdateDto;
@@ -41,17 +44,28 @@ public class AdminStoreController {
         }
     }
 
-    @PutMapping("/stores/{storeId}/info")
+    @PutMapping(value = "/stores/{storeId}/info", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateInfo(
             @PathVariable("storeId") Long storeId,
-            @RequestBody StoreInfoUpdateDto dto) {
+            @RequestParam("dto") String rawDto,
+            @RequestParam(value = "img", required = false) MultipartFile img
+    ) {
         try {
-            adminStoreService.updateStoreInfoByStoreId(storeId, dto);
+            System.out.println("Raw DTO: " + rawDto);// JSON 데이터 디버깅
+            System.out.println("Img: " + img);
+            // JSON 문자열을 DTO로 변환
+            ObjectMapper objectMapper = new ObjectMapper();
+            StoreInfoUpdateDto dto = objectMapper.readValue(rawDto, StoreInfoUpdateDto.class);
+
+            adminStoreService.updateStoreInfoByStoreId(storeId, dto, img);
             return new ResponseEntity<>(HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Unexpected Error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
 
 
 }
