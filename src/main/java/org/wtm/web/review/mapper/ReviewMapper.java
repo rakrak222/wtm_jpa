@@ -30,6 +30,7 @@ public class ReviewMapper {
     private List<ReviewCommentDto> toReviewCommentDtoList(Review review) {
         return review.getReviewComments().stream()
                 .map(comment -> new ReviewCommentDto(
+                        review.getId(),  // reviewId 추가
                         comment.getId(),
                         comment.getContent(),
                         comment.getUser().getName(),

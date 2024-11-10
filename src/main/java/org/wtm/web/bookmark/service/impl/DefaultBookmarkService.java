@@ -19,7 +19,7 @@ public class DefaultBookmarkService implements BookmarkService {
     private final UserRepository userRepository;
 
 
-    private static final Long FIXED_USER_ID = 1L;
+    private static final Long FIXED_USER_ID = 2L;
 
     @Override
     public void addBookmark(Long storeId) {

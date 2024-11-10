@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: wtm
+  datasource:
+    url: jdbc:h2:tcp://localhost/~/wtm;NON_KEYWORDS=USER
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        # show_sql: true
+        format_sql: true
+      use_sql_comments: true
+  # paging ?? size global default ??
+#  data:
+#    web:
+#      pageable:
+#        default-page-size: 10
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: debug
+#        type: trace
+
+app:
+  jwtSecret: whats-the-menu-do-you-want-some-tasty-meal-you-can-take-any-meal-you-wantgg
+  jwtExpirationMs: 86400000  # ?? ?? (1?: ??? ??)
+
+image:
+  base-upload-dir: C:\Users\user\Documents\image
+  upload-profile-dir: profiles
+  upload-menu-dir: menus
+  upload-review-dir: reviews

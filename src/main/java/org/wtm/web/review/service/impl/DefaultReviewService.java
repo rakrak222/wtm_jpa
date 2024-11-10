@@ -41,6 +41,8 @@ public class DefaultReviewService implements ReviewService {
     private final UploadService uploadService;
     private final ReviewImgRepository reviewImgRepository;
 
+    private final ReviewRepositoryCustom reviewRepositoryCustom;
+
 
     @Value("${image.upload-menu-dir}")
     private String uploadDir;
@@ -72,7 +74,7 @@ public class DefaultReviewService implements ReviewService {
     }
 
     /**
-     * 리뷰조회
+     * 리뷰조회 version 1
      */
     @Transactional(readOnly = true)
     public List<ReviewListDto> getReviewsByStoreId(Long storeId) {
@@ -81,6 +83,28 @@ public class DefaultReviewService implements ReviewService {
                 .map(reviewMapper::toReviewListDto)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * 리뷰조회 version 2 (동적관리)
+     */
+
+//    @Override
+//    @Transactional(readOnly = true)
+//    public List<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption) {
+//        List<Review> reviews = reviewRepositoryCustom.findAllByStoreIdWithSorting(storeId, sortOption);
+//        return reviews.stream()
+//                .map(reviewMapper::toReviewListDto)
+//                .collect(Collectors.toList());
+//    }
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption) {
+        // 레포지토리에서 ReviewListDto 리스트를 직접 받아서 반환
+        return reviewRepositoryCustom.findAllByStoreIdWithSorting(storeId, sortOption);
+    }
+
+
+
 
     @Override
     @Transactional

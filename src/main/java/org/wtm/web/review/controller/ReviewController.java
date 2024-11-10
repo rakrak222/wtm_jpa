@@ -42,7 +42,7 @@ public class ReviewController {
     }
 
 
-    @GetMapping("/{storeId}/reviews")
+//    @GetMapping("/{storeId}/reviews")
     public ResponseEntity<List<ReviewListDto>> getReviews(@PathVariable Long storeId){
         try {
             List<ReviewListDto> reviews = reviewService.getReviewsByStoreId(storeId);
@@ -51,6 +51,18 @@ public class ReviewController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
+    }
+
+    @GetMapping("/{storeId}/reviews")
+    public ResponseEntity<List<ReviewListDto>> getReviews(
+            @PathVariable Long storeId,
+            @RequestParam(defaultValue = "date") String sortOption) {
+        try {
+            List<ReviewListDto> reviews = reviewService.getReviewsByStoreId(storeId, sortOption);
+            return new ResponseEntity<>(reviews, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
 
@@ -90,7 +102,7 @@ public class ReviewController {
             @RequestParam("reviewScoresDtos") String scoresJson,
             @RequestParam(value = "files", required = false) List<MultipartFile> files) {
 
-        Long userId = 1L; // 테스트를 위해 userId를 1로 고정
+        Long userId = 2L; // 테스트를 위해 userId를 1로 고정
 
         // JSON 문자열을 DTO로 변환
         ObjectMapper objectMapper = new ObjectMapper();

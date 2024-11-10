@@ -35,7 +35,7 @@ public class StoreMenuController {
                                      @RequestParam(value = "files", required = false) List<MultipartFile> files) {
         menuRequestDto.setMenuImages(files);
 
-        Long userId = 1L; // 테스트를 위해 userId를 1로 고정
+        Long userId = 2L; // 테스트를 위해 userId를 1로 고정
 
         menuService.addMenu(storeId, menuRequestDto, userId);
         return ResponseEntity.status(201).body("메뉴가 성공적으로 등록되었습니다.");
