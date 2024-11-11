@@ -8,11 +8,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
+//@AllArgsConstructor
 @Builder
 public class ReviewListDto {
     private Long reviewId;
     private String reviewContent;
+    private List<String> reviewImageUrls;  // 이미지 URL 리스트 필드 추가
     private String userName;
     private String userProfilePicture;
     private List<ReviewCommentDto> reviewComments;
@@ -23,11 +24,13 @@ public class ReviewListDto {
     public ReviewListDto() {
     }
     // 필요한 생성자 추가
-    public ReviewListDto(Long reviewId, String reviewContent, String userName, String userProfilePicture, Double reviewScore, LocalDateTime reviewRegDate) {
+    public ReviewListDto(Long reviewId, String reviewContent, List<String> reviewImageUrls, String userName, String userProfilePicture, List<ReviewCommentDto> reviewComments, Double reviewScore, LocalDateTime reviewRegDate) {
         this.reviewId = reviewId;
         this.reviewContent = reviewContent;
+        this.reviewImageUrls = reviewImageUrls;
         this.userName = userName;
         this.userProfilePicture = userProfilePicture;
+        this.reviewComments = reviewComments;
         this.reviewScore = reviewScore;
         this.reviewRegDate = reviewRegDate;
     }

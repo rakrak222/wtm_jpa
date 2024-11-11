@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface StoreRepository extends JpaRepository<Store, Long> {
+public interface StoreRepository extends JpaRepository<Store, Long>, StoreRepositoryCustom  {
 
     @Query("select s from Store s " +
             "join fetch s.user a ")
@@ -28,7 +28,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     List<Ticket> findTicketsByStoreId(@Param("storeId") Long storeId);
 
 
-    @Query("SELECT COUNT(r), COALESCE(AVG(rs.score), 0) " +
+    @Query("SELECT COUNT(DISTINCT r), COALESCE(AVG(rs.score), 0) " +
             "FROM Review r LEFT JOIN r.reviewScores rs " +
             "WHERE r.store.id = :storeId")
     List<Object[]> findReviewStateByStoreId(@Param("storeId") Long storeId);

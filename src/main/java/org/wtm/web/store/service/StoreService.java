@@ -13,6 +13,8 @@ public interface StoreService {
 
     List<StoreResponseDto> getAllStores();
 
+    List<StoreResponseDto> getStores(String query);
+
     StoreReviewStatsDto getStoreReviewStats(Long storeId);
 
     StoreDetailResponseDto getStoreDetailsById(Long storeId);

@@ -13,4 +13,6 @@ import java.util.Optional;
 public interface MealRepository extends JpaRepository<Meal, Long> {
     @Query("SELECT m FROM Meal m WHERE m.mealDate = :mealDate AND m.store.id = :storeId")
     Optional<Meal> findByMealDateAndStoreId(@Param("mealDate") LocalDate mealDate, @Param("storeId") Long storeId);
+
+    Optional<Meal> findByStoreIdAndMealDate(Long storeId, LocalDate mealDate);
 }

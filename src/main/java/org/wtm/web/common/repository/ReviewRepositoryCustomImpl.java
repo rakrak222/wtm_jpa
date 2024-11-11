@@ -1,6 +1,7 @@
 package org.wtm.web.common.repository;
 
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
@@ -14,10 +15,7 @@ import org.springframework.stereotype.Repository;
 
 import org.wtm.web.review.dto.ReviewCommentDto;
 import org.wtm.web.review.dto.ReviewListDto;
-import org.wtm.web.review.model.QReview;
-import org.wtm.web.review.model.QReviewComment;
-import org.wtm.web.review.model.QReviewScore;
-import org.wtm.web.review.model.Review;
+import org.wtm.web.review.model.*;
 
 import java.util.List;
 import java.util.Map;
@@ -33,8 +31,8 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
         QReview review = QReview.review;
         QReviewScore reviewScore = QReviewScore.reviewScore;
         QReviewComment reviewComment = QReviewComment.reviewComment;
+        QReviewImg reviewImg = QReviewImg.reviewImg;
 
-        // 평균 점수를 계산
         NumberTemplate<Double> avgScore = Expressions.numberTemplate(
                 Double.class,
                 "({0})",
@@ -44,7 +42,6 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
                         .where(reviewScore.review.eq(review))
         );
 
-        // 리뷰 데이터 조회 (리뷰 댓글 제외)
         List<ReviewListDto> reviews = queryFactory
                 .select(Projections.fields(ReviewListDto.class,
                         review.id.as("reviewId"),
@@ -60,10 +57,9 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
                 .orderBy("rating".equals(sortOption) ? avgScore.desc() : review.regDate.desc())
                 .fetch();
 
-        // 답글 데이터 조회
         List<ReviewCommentDto> comments = queryFactory
                 .select(Projections.fields(ReviewCommentDto.class,
-                        reviewComment.review.id.as("reviewId"),  // reviewId로 매핑할 수 있도록 추가
+                        reviewComment.review.id.as("reviewId"),
                         reviewComment.id.as("commentId"),
                         reviewComment.content.as("commentContent"),
                         reviewComment.user.name.as("adminName"),
@@ -73,12 +69,26 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
                 .where(reviewComment.review.store.id.eq(storeId))
                 .fetch();
 
-        // reviewId를 기준으로 댓글을 매핑
         Map<Long, List<ReviewCommentDto>> commentMap = comments.stream()
                 .collect(Collectors.groupingBy(ReviewCommentDto::getReviewId));
 
-        // 각 리뷰에 대해 답글 리스트 설정
-        reviews.forEach(r -> r.setReviewComments(commentMap.getOrDefault(r.getReviewId(), List.of())));
+        // ReviewImg 테이블에서 이미지 URL 가져오기
+        List<Tuple> images = queryFactory
+                .select(reviewImg.review.id, reviewImg.img)
+                .from(reviewImg)
+                .where(reviewImg.review.store.id.eq(storeId))
+                .fetch();
+
+        Map<Long, List<String>> imageMap = images.stream()
+                .collect(Collectors.groupingBy(
+                        tuple -> tuple.get(reviewImg.review.id),
+                        Collectors.mapping(tuple -> tuple.get(reviewImg.img), Collectors.toList())
+                ));
+
+        reviews.forEach(r -> {
+            r.setReviewComments(commentMap.getOrDefault(r.getReviewId(), List.of()));
+            r.setReviewImageUrls(imageMap.getOrDefault(r.getReviewId(), List.of()));  // 이미지 URL 설정
+        });
 
         return reviews;
     }

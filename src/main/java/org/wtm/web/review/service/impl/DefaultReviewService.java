@@ -44,7 +44,7 @@ public class DefaultReviewService implements ReviewService {
     private final ReviewRepositoryCustom reviewRepositoryCustom;
 
 
-    @Value("${image.upload-menu-dir}")
+    @Value("${image.upload-review-dir}")
     private String uploadDir;
 
     @Transactional

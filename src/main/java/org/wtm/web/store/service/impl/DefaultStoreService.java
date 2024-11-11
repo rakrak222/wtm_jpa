@@ -28,6 +28,8 @@ public class DefaultStoreService implements StoreService {
     private final StoreDetailMapper storeDetailMapper;
 
 
+
+    // 모든 가게 조회(검색기능 없는 버전)
     @Override
     @Transactional
     public List<StoreResponseDto> getAllStores() {        // 1. StoreRepository에서 fetch join을 통해 데이터를 가져옴
@@ -39,6 +41,25 @@ public class DefaultStoreService implements StoreService {
                 .collect(Collectors.toList());
 
         // 3. 결과 반환
+        return result;
+    }
+
+    // 가게 조회(검색 기능 포함)
+    @Override
+    @Transactional
+    public List<StoreResponseDto> getStores(String query) {
+        List<Store> stores;
+
+        if(query != null && !query.isEmpty()) {
+            stores = storeRepository.searchStores(query);
+        } else {
+            stores = storeRepository.findAllWithDetails();
+        }
+
+        List<StoreResponseDto> result = stores.stream()
+                .map(StoreMapper::toDto)
+                .collect(Collectors.toList());
+
         return result;
     }
 

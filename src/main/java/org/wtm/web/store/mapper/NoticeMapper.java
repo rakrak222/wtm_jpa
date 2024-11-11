@@ -14,6 +14,11 @@ public class NoticeMapper {
                 .title(notice.getTitle())
                 .content(notice.getContent())
                 .regDate(notice.getRegDate())
+                .profilePicture(
+                        notice.getStore().getUser() != null
+                                ? notice.getStore().getUser().getProfilePicture()
+                                : null
+                ) // 작성자의 프로필 사진 URL 추가
                 .build();
     }
 }
