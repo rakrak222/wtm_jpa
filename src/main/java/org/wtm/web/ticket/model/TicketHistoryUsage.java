@@ -16,6 +16,7 @@ public class TicketHistoryUsage extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ticket_history_usage_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -27,5 +28,5 @@ public class TicketHistoryUsage extends BaseTimeEntity {
     private Ticket ticket;
 
     @Column(nullable = false)
-    private Integer amount;
+    private Long amount;
 }

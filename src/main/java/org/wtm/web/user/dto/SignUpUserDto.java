@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 import org.wtm.web.user.model.User;
 import org.wtm.web.user.constants.UserRole;
 
@@ -19,17 +20,17 @@ public class SignUpUserDto {
     private String role;           // 사용자 권한 (예: USER, ADMIN)
     private String address;        // 주소
     private String phone;          // 전화번호
-    private String profilePicture; // 프로필 사진 URL
+    private MultipartFile profilePicture; // 프로필 사진 파일 (업로드된 파일)
 
     // User 엔티티로 변환
-    public User toEntity(String encodedPassword) {
+    public User toEntity(String encodedPassword, String profilePictureUrl) {
         return User.builder()
                 .email(email)
                 .password(encodedPassword) // 암호화된 비밀번호
                 .name(name)
                 .address(address)
                 .phone(phone)
-                .profilePicture(profilePicture)
+                .profilePicture(profilePictureUrl) // 저장된 파일 URL 설정
                 .role(UserRole.USER) // 회원가입 기본 역할을 USER로 설정
                 .build();
     }

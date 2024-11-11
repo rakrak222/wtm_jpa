@@ -8,4 +8,6 @@ import lombok.Data;
 public class TicketResponseDto {
     private Long id;
     private Long price;
+    private String name;
+    private Long categoryId;
 }

@@ -20,7 +20,7 @@ public class TicketHistoryPurchase extends BaseTimeEntity {
     private Long id;
 
     @Column(nullable = false)
-    private Integer amount;
+    private Long amount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

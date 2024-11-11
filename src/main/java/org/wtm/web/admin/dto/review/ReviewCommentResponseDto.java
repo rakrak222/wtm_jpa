@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class ReviewCommentResponseDto {
-    private Long id;
+    private Long reviewId;
     private String content;
     private String username;
     private String profilePicture;
