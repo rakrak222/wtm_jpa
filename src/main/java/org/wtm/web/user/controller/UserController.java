@@ -1,25 +1,15 @@
 package org.wtm.web.user.controller;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.wtm.web.common.service.UploadService;
-import org.wtm.web.user.dto.JwtResponseDto;
-import org.wtm.web.user.dto.LoginRequestDto;
-import org.wtm.web.user.dto.SignUpUserDto;
+import org.wtm.web.auth.dto.UserSignUpDto;
 import org.wtm.web.user.exceptions.DuplicateEmailException;
 import org.wtm.web.user.exceptions.InvalidCredentialsException;
 import org.wtm.web.user.exceptions.UserNotFoundException;
-import org.wtm.web.user.model.User;
 import org.wtm.web.user.service.UserService;
 
 @RestController
@@ -29,21 +19,15 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequestDto) {
-        String token = userService.login(loginRequestDto);
-        return ResponseEntity.ok(new JwtResponseDto(token));
-    }
-
     @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> signup(@ModelAttribute SignUpUserDto signUpUserDto){
-        userService.signUp(signUpUserDto);
+    public ResponseEntity<String> signup(@ModelAttribute UserSignUpDto userSignUpDto) {
+        userService.signUp(userSignUpDto);
 
         // User 엔티티 생성 및 저장
         return ResponseEntity.status(HttpStatus.CREATED).body("User successfully registered");
     }
-
     // User 관련 예외에 대한 공통 처리
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<String> handleUserNotFound(UserNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
