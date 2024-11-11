@@ -37,23 +37,7 @@ public class AdminMenuMapper {
     }
 
 
-
-//    public MenuResponseDto toMenuResponseDto(Menu menu) {
-//        List<String> menuImages = menu.getMeal().getMenuImgs().stream()
-//                .map(MenuImg::getImg)
-//                .toList();
-//
-//        return MenuResponseDto.builder()
-//                .id(menu.getId())
-//                .name(menu.getName())
-//                .mealId(menu.getMeal().getId())
-//                .store(menu.getStore())
-//                .user(menu.getUser())
-//                .categoryId(menu.getCategory().getId())
-//                .menuImages(menuImages.stream().map(url -> MenuImgDto.builder().url(url).build()).collect(Collectors.toList()))
-//                .build();
-//    }
-
+    // MenuCreateDto -> Menu 엔티티 변환
     public Menu toMenuEntity(MenuCreateDto dto, Store store, MenuCategory category, User user) {
         return Menu.builder()
                 .name(dto.getName())
@@ -62,4 +46,21 @@ public class AdminMenuMapper {
                 .user(user)
                 .build();
     }
+
+    // 여러 MenuCreateDto -> Menu 엔티티 리스트 변환
+    public List<Menu> toMenuEntities(List<MenuCreateDto> dtos, Store store, MenuCategory category, User user) {
+        return dtos.stream()
+                .map(dto -> toMenuEntity(dto, store, category, user)) // 단일 엔티티 변환 메서드 재사용
+                .collect(Collectors.toList());
+    }
+
+    // 여러 Menu -> MenuListDto 변환
+    public List<MenuListDto> toMenuListDtos(List<Menu> menus) {
+        return menus.stream()
+                .map(this::toMenuListDto) // 단일 변환 메서드 재사용
+                .collect(Collectors.toList());
+    }
+
+
+
 }

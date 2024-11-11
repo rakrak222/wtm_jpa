@@ -7,6 +7,7 @@ import org.wtm.web.menu.model.Menu;
 import org.wtm.web.menu.model.MenuImg;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface AdminMenuService {
@@ -14,20 +15,26 @@ public interface AdminMenuService {
     /**
      * 메뉴 조회
      */
-    public List<MenuListDto> getMenusByStoreId(Long storeId);
+    public List<MenuListDto> getMenusByStoreIdAndDate(Long storeId, LocalDateTime date);
 
     /**
      * 메뉴 등록
      */
-    public MenuResponseDto addMenu(Long storeId, MenuRequestDto menuRequestDto, List<MultipartFile> imgs) throws IOException;
-
+    public List<MenuResponseDto> addMenus(
+            Long storeId,
+            MealCreateDto mealCreateDto,
+            List<MenuCreateDto> menuCreateDtos,
+            List<MultipartFile> imgs
+    );
     /**
      * 메뉴 수정
      */
-    public MenuResponseDto updateMenu(Long storeId, Long menuId, MenuRequestDto menuRequestDto, List<MultipartFile> imgs) throws IOException;
+    public MenuResponseDto updateMenu(Long storeId, Long menuId, MealCreateDto mealCreateDto, MenuCreateDto menuCreateDto, List<MultipartFile> imgs) throws IOException;
 
     /**
      * 메뉴 삭제
      */
     public void deleteMenu(Long storeId, Long menuId);
+
+    List<String> getDatesWithMenus(Long storeId);
 }

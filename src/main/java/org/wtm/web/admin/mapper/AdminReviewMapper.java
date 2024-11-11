@@ -6,9 +6,11 @@ import org.wtm.web.admin.dto.review.ReviewCommentDto;
 import org.wtm.web.admin.dto.review.ReviewDto;
 import org.wtm.web.admin.dto.review.ReviewListDto;
 import org.wtm.web.review.model.Review;
+import org.wtm.web.review.model.ReviewImg;
 import org.wtm.web.review.model.ReviewScore;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -22,6 +24,10 @@ public class AdminReviewMapper {
                 review.getUser().getProfilePicture(),
                 review.getStore().getUser().getProfilePicture(),
                 toReviewCommentDtoList(review),
+                review.getReviewImgs().stream()
+                        .map(ReviewImg::getImg) // ReviewImg의 imageUrl만 추출
+                        .filter(Objects::nonNull)
+                        .toList(), // List<String>으로 변환
                 calculateAverageScore(review),
                 review.getRegDate()
         );
