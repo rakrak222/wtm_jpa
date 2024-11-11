@@ -19,10 +19,7 @@ import org.wtm.web.user.dto.UserResponseDto;
 import org.wtm.web.user.dto.UserUpdateDto;
 import org.wtm.web.user.dto.bookmark.BookmarkDto;
 import org.wtm.web.user.dto.review.UserReviewDto;
-import org.wtm.web.user.dto.ticket.TicketAllHistoryDto;
-import org.wtm.web.user.dto.ticket.TicketPurchaseDto;
-import org.wtm.web.user.dto.ticket.TicketSummaryDto;
-import org.wtm.web.user.dto.ticket.TicketUsageDto;
+import org.wtm.web.user.dto.ticket.*;
 import org.wtm.web.user.model.User;
 import org.wtm.web.user.service.MyPageService;
 
@@ -115,9 +112,9 @@ public class DefaultMyPageService implements MyPageService {
                     TicketSummaryDto.form(
                             purchaseTicket.getTicket(),
                             purchaseTicket.getTicket().getStore(),
-                            0,
-                            0,
-                            0,
+                            0L,
+                            0L,
+                            0L,
                             0.0
                     ));
             ticketSummaryDto.addPurchasedTickets(purchaseTicket.getAmount());
@@ -162,7 +159,7 @@ public class DefaultMyPageService implements MyPageService {
         ticketListInfo.forEach(ticketInfo -> {
             Long storeId = ticketInfo.getStoreId();
 
-            double reviewAverage = reviewAvgMap.get(storeId);
+            Double reviewAverage = reviewAvgMap.get(storeId);
             ticketInfo.addReviewAverage(reviewAverage);
 
             boolean isBookmarked = bookmarkMap.getOrDefault(storeId, false);
@@ -211,7 +208,7 @@ public class DefaultMyPageService implements MyPageService {
         return true;
     }
 
-    public List<TicketAllHistoryDto> getMyTicketHistory(Long userId, int month, int year) {
+    public TicketHistoryResponseDto getMyTicketHistory(Long userId, int month, int year) {
         // 시작일과 종료일 설정
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
@@ -229,6 +226,8 @@ public class DefaultMyPageService implements MyPageService {
                         .ticketId(usage.getTicket().getId())
                         .type("usage")
                         .regDate(usage.getRegDate())
+                        .price(usage.getAmount()*ticketRepository.findPriceById(usage.getTicket().getId()))
+                        .storeName(usage.getTicket().getStore().getName())
                         .build())
                 .collect(Collectors.toList());
 
@@ -243,17 +242,41 @@ public class DefaultMyPageService implements MyPageService {
                         .ticketId(purchase.getTicket().getId())
                         .type("purchase")
                         .regDate(purchase.getRegDate())
+                        .price(purchase.getAmount()*ticketRepository.findPriceById(purchase.getTicket().getId()))
+                        .storeName(purchase.getTicket().getStore().getName())
                         .build())
                 .collect(Collectors.toList());
 
+        // totalPurchasedPrice와 totalUsedPrice 계산
+        Long totalPurchasedPrice = purchaseHistory.stream()
+                .mapToLong(purchase -> purchase.getAmount() * ticketRepository.findPriceById(purchase.getTicketId()))
+                .sum();
+
+        Long totalUsedPrice = usageHistory.stream()
+                .mapToLong(usage -> usage.getAmount() * ticketRepository.findPriceById(usage.getTicketId()))
+                .sum();
+
+        // 전체 티켓 개수 계산 (purchase - usage)
+        Long totalAmount = purchaseHistory.stream().mapToLong(TicketAllHistoryDto::getAmount).sum()
+                - usageHistory.stream().mapToLong(TicketAllHistoryDto::getAmount).sum();
+
         // 두 목록을 합치고 날짜로 정렬
-        List<TicketAllHistoryDto> combinedHistory = Stream.concat(purchaseHistory.stream(), usageHistory.stream())
+        // 메서드화 시킨다면, combinedHistory 로 합체 및 정렬화 시키는거 따로 뺄것.
+        // 이름 달라야할 이유가 오로지 하나의 서비스여서그럼.
+        List<TicketAllHistoryDto> combinedHistoryForAll = Stream.concat(purchaseHistory.stream(), usageHistory.stream())
                 .sorted(Comparator.comparing(TicketAllHistoryDto::getRegDate))
                 .collect(Collectors.toList());
-        return combinedHistory;
+
+        return TicketHistoryResponseDto.builder()
+                .combinedHistory(combinedHistoryForAll)
+                .totalPurchasedPrice(totalPurchasedPrice)
+                .totalUsedPrice(totalUsedPrice)
+                .totalAmount(totalAmount)
+                .build();
     }
 
-    public List<TicketAllHistoryDto> getMyTicketHistoryByStore(Long userId, Long storeId, int month, int year) {
+
+    public TicketHistoryResponseDto getMyTicketHistoryByStore(Long userId, Long storeId, int month, int year) {
         // 시작일과 종료일 설정
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
@@ -271,14 +294,20 @@ public class DefaultMyPageService implements MyPageService {
                 .findByUserIdAndRegDateBetween(userId, startDateTime, endDateTime)
                 .stream()
                 .filter(usage -> ticketIds.contains(usage.getTicket().getId()))
-                .map(usage -> TicketAllHistoryDto.builder()
-                        .id(usage.getId())
-                        .userId(userId)
-                        .amount(usage.getAmount())
-                        .ticketId(usage.getTicket().getId())
-                        .type("usage")
-                        .regDate(usage.getRegDate())
-                        .build())
+                .map(usage -> {
+                    String storeName = usage.getTicket().getStore().getName();
+                    System.out.println(storeName);
+                    return TicketAllHistoryDto.builder()
+                            .id(usage.getId())
+                            .userId(userId)
+                            .amount(usage.getAmount())
+                            .ticketId(usage.getTicket().getId())
+                            .price(usage.getAmount()*ticketRepository.findPriceById(usage.getTicket().getId()))
+                            .type("usage")
+                            .regDate(usage.getRegDate())
+                            .storeName(storeName)
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         // TicketHistoryPurchase 데이터 가져오기 (ticketId 조건 추가)
@@ -286,14 +315,20 @@ public class DefaultMyPageService implements MyPageService {
                 .findByUserIdAndRegDateBetween(userId, startDateTime, endDateTime)
                 .stream()
                 .filter(purchase -> ticketIds.contains(purchase.getTicket().getId()))
-                .map(purchase -> TicketAllHistoryDto.builder()
-                        .id(purchase.getId())
-                        .userId(userId)
-                        .amount(purchase.getAmount())
-                        .ticketId(purchase.getTicket().getId())
-                        .type("purchase")
-                        .regDate(purchase.getRegDate())
-                        .build())
+                .map(purchase -> {
+                    String storeName = purchase.getTicket().getStore().getName();
+                    System.out.println(storeName);
+                    return TicketAllHistoryDto.builder()
+                            .id(purchase.getId())
+                            .userId(userId)
+                            .amount(purchase.getAmount())
+                            .ticketId(purchase.getTicket().getId())
+                            .price(purchase.getAmount()*ticketRepository.findPriceById(purchase.getTicket().getId()))
+                            .type("purchase")
+                            .regDate(purchase.getRegDate())
+                            .storeName(storeName)
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         // 두 목록을 합치고 날짜로 정렬
@@ -301,7 +336,30 @@ public class DefaultMyPageService implements MyPageService {
                 .sorted(Comparator.comparing(TicketAllHistoryDto::getRegDate))
                 .collect(Collectors.toList());
 
-        return combinedHistory;
+        // totalPurchasedPrice와 totalUsedPrice 계산
+        Long totalPurchasedPrice = purchaseHistory.stream()
+                .mapToLong(purchase -> purchase.getAmount() * ticketRepository.findPriceById(purchase.getTicketId()))
+                .sum();
+
+        Long totalUsedPrice = usageHistory.stream()
+                .mapToLong(usage -> usage.getAmount() * ticketRepository.findPriceById(usage.getTicketId()))
+                .sum();
+
+        // 전체 티켓 개수 계산 (purchase - usage)
+        Long totalAmount = purchaseHistory.stream().mapToLong(TicketAllHistoryDto::getAmount).sum()
+                - usageHistory.stream().mapToLong(TicketAllHistoryDto::getAmount).sum();
+
+        // 두 목록을 합치고 날짜로 정렬
+        List<TicketAllHistoryDto> combinedHistoryForStore = Stream.concat(purchaseHistory.stream(), usageHistory.stream())
+                .sorted(Comparator.comparing(TicketAllHistoryDto::getRegDate))
+                .collect(Collectors.toList());
+
+        return TicketHistoryResponseDto.builder()
+                .combinedHistory(combinedHistoryForStore)
+                .totalPurchasedPrice(totalPurchasedPrice)
+                .totalUsedPrice(totalUsedPrice)
+                .totalAmount(totalAmount)
+                .build();
     }
 
 
@@ -313,19 +371,12 @@ public class DefaultMyPageService implements MyPageService {
             List<UserReviewDto> reviewsWithAverageScore = reviews.stream().map(review -> {
                 // @Query를 이용해 평균 점수를 한 번에 가져옴
                 Double averageScore = reviewScoreRepository.findAverageScoreByReviewId(review.getId());
-                // 북마크 여부 확인
-                Bookmark bookmark = bookmarkRepository.findOneByStoreIdAndUserId(review.getStore().getId(), userId);
-                boolean isBookmarked = false;
-                if(bookmark!=null){
-                    isBookmarked = true;
-                }
                 // 리뷰와 평균 점수를 합쳐서 반환
                 return UserReviewDto.builder()
                         .reviewId(review.getId())
                         .content(review.getContent())
                         .regDate(review.getRegDate())
                         .averageScore(averageScore != null ? averageScore : 0.0)
-                        .isBookmarked(isBookmarked)
                         .storeName(review.getStore().getName()) // 필요한 Store 필드를 추가
 //                         .storeImageUrl()
                         .build();
@@ -350,11 +401,12 @@ public class DefaultMyPageService implements MyPageService {
                         return BookmarkDto.builder()
                                 .storeId(storeId)
                                 .storeName(bookmark.getStore().getName())
-                                .storeOpentime(bookmark.getStore().getOpenTime())
-                                .storeClosetime(bookmark.getStore().getCloseTime())
+                                .storeOpenTime(bookmark.getStore().getOpenTime())
+                                .storeCloseTime(bookmark.getStore().getCloseTime())
                                 .ticketId(ticket != null ? ticket.getId() : null)
                                 .ticketPrice(ticket != null ? ticket.getPrice() : 0)
                                 .reviewAverage(reviewRepository.calculateAvgByStoreId(storeId)) // @Query를 이용한 평균 점수 계산
+                                .isBookmarked(true)
                                 .build();
                     })
                     .collect(Collectors.toList());
@@ -368,6 +420,38 @@ public class DefaultMyPageService implements MyPageService {
                 .orElseThrow(() -> new EntityNotFoundException("Review not found with ID: " + reviewId));
         reviewRepository.deleteById(reviewId);
         return true;
+    }
+
+    @Transactional
+    public boolean saveMyBookmark(Long storeId, Long userId) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("Store not found with id: " + storeId));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+
+        Bookmark bookmark = bookmarkRepository.findByStoreIdAndUserId(storeId, userId)
+                .orElseGet(() -> Bookmark.builder()
+                        .store(store)
+                        .user(user)
+                        .build());
+
+        if (bookmark.getId() == null) {
+            bookmarkRepository.save(bookmark);
+            return true;
+        }
+        return false;
+    }
+
+    @Transactional
+    public boolean deleteMyBookmark(Long storeId, Long userId) {
+        Bookmark bookmark = bookmarkRepository.findByStoreIdAndUserId(storeId, userId)
+                .orElse(null);
+
+        if (bookmark != null) {
+            bookmarkRepository.delete(bookmark);
+            return true;
+        }
+        return false;
     }
 
 

@@ -15,6 +15,7 @@ import org.wtm.web.store.model.StoreSns;
 import org.wtm.web.store.service.StoreService;
 import org.wtm.web.ticket.model.Ticket;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -58,12 +59,25 @@ public class DefaultStoreService implements StoreService {
         return storeDetailMapper.toDto(store, storeSnsList, ticketList);
     }
 
+
+    @Override
+    @Transactional
     public StoreReviewStatsDto getStoreReviewStats(Long storeId) {
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new IllegalArgumentException("가게를 찾을수 없습니다."));
-        Object[] stats = storeRepository.findReviewStateByStoreId(storeId);
-        Long reviewCount = (Long) stats[0];
-        Double averageReviewScore = (Double) stats[1];
+                .orElseThrow(() -> new IllegalArgumentException("가게를 찾을 수 없습니다."));
+
+        // 쿼리 결과를 List<Object[]>로 받기
+        List<Object[]> statsList = storeRepository.findReviewStateByStoreId(storeId);
+
+        // statsList가 비어있는지 확인하고 첫 번째 항목 가져오기
+        Object[] stats = (statsList != null && !statsList.isEmpty()) ? statsList.get(0) : new Object[]{0, 0.0};
+
+        // 디버깅을 위한 출력
+        System.out.println("stats = " + Arrays.toString(stats));
+
+        // 배열의 길이를 확인하여 값이 없을 때 기본값 설정
+        Long reviewCount = (stats.length > 0 && stats[0] instanceof Number) ? ((Number) stats[0]).longValue() : 0L;
+        Double averageReviewScore = (stats.length > 1 && stats[1] instanceof Number) ? ((Number) stats[1]).doubleValue() : 0.0;
 
         return StoreReviewStatsMapper.toDto(store, reviewCount, averageReviewScore);
     }

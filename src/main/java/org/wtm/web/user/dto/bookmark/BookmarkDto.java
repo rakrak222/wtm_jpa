@@ -8,11 +8,12 @@ import java.time.LocalTime;
 @Getter
 @Builder
 public class BookmarkDto {
-    private LocalTime storeClosetime;
-    private LocalTime storeOpentime;
+    private LocalTime storeCloseTime;
+    private LocalTime storeOpenTime;
     private String storeName;
     private Long storeId;
     private Long ticketId;
     private Long ticketPrice;
-    private double reviewAverage;
+    private Double reviewAverage;
+    private Boolean isBookmarked;
 }

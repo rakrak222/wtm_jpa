@@ -20,4 +20,7 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     @EntityGraph(attributePaths = "store")
     List<Bookmark> findAllByUserId(Long userId);
 
+    Optional<Bookmark> findByStoreIdAndUserId(Long storeId, Long userId);
+
+    void deleteByStoreIdAndUserId(Long storeId, Long userId);
 }
