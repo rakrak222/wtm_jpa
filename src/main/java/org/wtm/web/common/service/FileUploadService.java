@@ -87,7 +87,7 @@ public class FileUploadService implements UploadService{
                       file.transferTo(dest);
 
                       // 브라우저 접근 가능한 URL 추가
-                      filePaths.add("/uploads/" + uploadDirType + "/" + dateFolder + "/" + newFileName);
+                      filePaths.add("/uploads/" + uploadDirType + File.separator + dateFolder + File.separator + newFileName);
                   } catch (IOException e) {
                       throw new RuntimeException("Failed to upload file", e);
                   }
