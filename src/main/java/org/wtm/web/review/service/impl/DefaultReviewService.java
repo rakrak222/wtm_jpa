@@ -21,6 +21,8 @@ import org.wtm.web.review.service.ReviewService;
 import org.wtm.web.store.model.Store;
 import org.wtm.web.user.model.User;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -100,7 +102,30 @@ public class DefaultReviewService implements ReviewService {
     @Transactional(readOnly = true)
     public List<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption) {
         // 레포지토리에서 ReviewListDto 리스트를 직접 받아서 반환
-        return reviewRepositoryCustom.findAllByStoreIdWithSorting(storeId, sortOption);
+        List<ReviewListDto> reviews = reviewRepositoryCustom.findAllByStoreIdWithSorting(storeId, sortOption);
+
+        reviews.forEach(review -> {
+            review.setRelativeDate(calculateRelativeDate(review.getReviewRegDate()));
+        });
+
+        return reviews;
+    }
+    
+    private String calculateRelativeDate(LocalDateTime reviewDate) {
+        LocalDateTime now = LocalDateTime.now();
+        Duration duration = Duration.between(reviewDate, now);
+        
+        if (duration.toMinutes() == 0) {
+            return "오늘";
+        } else if (duration.toDays() < 7) {
+            return duration.toDays() + "일 전";
+        } else if (duration.toDays() < 30) {
+            return "일주일 전";
+        } else if (duration.toDays() < 365) {
+            return "한 달 전";
+        } else {
+            return "1년 전";
+        }
     }
 
 

@@ -19,12 +19,13 @@ public class ReviewListDto {
     private List<ReviewCommentDto> reviewComments;
     private Double reviewScore;
     private LocalDateTime reviewRegDate;
+    private String relativeDate;
 
     // 기본 생성자 추가
     public ReviewListDto() {
     }
     // 필요한 생성자 추가
-    public ReviewListDto(Long reviewId, String reviewContent, List<String> reviewImageUrls, String userName, String userProfilePicture, List<ReviewCommentDto> reviewComments, Double reviewScore, LocalDateTime reviewRegDate) {
+    public ReviewListDto(Long reviewId, String reviewContent, List<String> reviewImageUrls, String userName, String userProfilePicture, List<ReviewCommentDto> reviewComments, Double reviewScore, LocalDateTime reviewRegDate, String relativeDate) {
         this.reviewId = reviewId;
         this.reviewContent = reviewContent;
         this.reviewImageUrls = reviewImageUrls;
@@ -33,5 +34,6 @@ public class ReviewListDto {
         this.reviewComments = reviewComments;
         this.reviewScore = reviewScore;
         this.reviewRegDate = reviewRegDate;
+        this.relativeDate = relativeDate;  // 상대 날짜 초기화
     }
 }

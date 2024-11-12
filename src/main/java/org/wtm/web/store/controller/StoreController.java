@@ -1,6 +1,9 @@
 package org.wtm.web.store.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.wtm.web.menu.dto.NoticeResponseDto;
@@ -65,8 +68,13 @@ public class StoreController {
     }
 
     @GetMapping("/{storeId}/notices")
-    public ResponseEntity<?> getNoticesByStoreId(@PathVariable Long storeId) {
-        List<NoticeResponseDto> response = noticeService.getNoticesByStoreId(storeId);
+    public ResponseEntity<?> getNoticesByStoreId(
+            @PathVariable Long storeId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size){
+
+        Pageable pageable = PageRequest.of(page, size);
+        Slice<NoticeResponseDto> response = noticeService.getNoticesByStoreId(storeId, pageable);
         if (response == null || response.isEmpty()) {
             return ResponseEntity.status(404).body("공지사항을 찾을 수 없습니다.");
         }
