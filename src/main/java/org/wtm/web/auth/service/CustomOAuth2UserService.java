@@ -1,132 +1,90 @@
 package org.wtm.web.auth.service;
 
-
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import io.jsonwebtoken.security.Password;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.convert.Delimiter;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-import org.wtm.web.auth.dto.UserSecurityDto;
+import org.wtm.web.auth.dto.GoogleResponse;
+import org.wtm.web.auth.dto.KakaoResponse;
+import org.wtm.web.auth.dto.NaverResponse;
+import org.wtm.web.auth.dto.OAuth2Response;
+import org.wtm.web.auth.dto.UserDto;
+import org.wtm.web.auth.dto.CustomOAuth2User;
 import org.wtm.web.common.repository.UserRepository;
 import org.wtm.web.user.constants.UserRole;
 import org.wtm.web.user.model.User;
 
-@Log4j2
 @Service
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
   private final UserRepository userRepository;
-  private final PasswordEncoder passwordEncoder;
 
+  @Override
   public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-    log.info("userRequest...");
-    log.info(userRequest);
-
-    log.info("oauth2 user........................................");
-
-    ClientRegistration clientRegistration = userRequest.getClientRegistration();
-    String clientName = clientRegistration.getClientName();
-
-    log.info("NAME: {}", clientName);
 
     OAuth2User oAuth2User = super.loadUser(userRequest);
-    Map<String, Object> paramMap = oAuth2User.getAttributes();
 
-    Map<String, String> kakaoUserInfo = null;
+    System.out.println(oAuth2User);
 
-    // Oauth2 추가할 서비스 있다면 더 추가
-    switch (clientName) {
-      case "kakao":
-        kakaoUserInfo = getKakaoUserInfo(paramMap);
-        break;
+    String registrationId = userRequest.getClientRegistration().getRegistrationId();
+    OAuth2Response oAuth2Response = null;
+    if (registrationId.equals("naver")) {
+      oAuth2Response = new NaverResponse(oAuth2User.getAttributes());
+    } else if (registrationId.equals("google")) {
+      oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
+    } else if (registrationId.equals("kakao")) {
+      oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
+    } else {
+      return null;
     }
 
-    log.info("=============================================");
-    log.info("email: {}", kakaoUserInfo.get("email"));
-    log.info("nickname: {}", kakaoUserInfo.get("nickname"));
-    log.info("=============================================");
+    //리소스 서버에서 발급 받은 정보로 사용자를 특정할 아이디값을 만듦
+    String username = oAuth2Response.getProvider()+"_"+oAuth2Response.getProviderId();
+    String email = oAuth2Response.getEmail();
 
-    return generateDto(kakaoUserInfo, paramMap);
-  }
-  // 이미 회원가입된 회원은 기존 정보 반환, 새로운 사용자는 자동으로 회원 가입 처리
-  private UserSecurityDto generateDto(Map<String, String> kakakoUserInfo, Map<String, Object> params) {
+    Optional<User> optionalUser = userRepository.findByEmail(email);
 
-    String email = kakakoUserInfo.get("email");
-    String nickname = kakakoUserInfo.get("nickname");
+    if(optionalUser.isEmpty()) {
 
-    Optional<User> result = userRepository.findByEmail(email);
-
-    // DB에 해당 이메일 사용자가 없다면
-    if (result.isEmpty()) {
-      // 회원 추가 --
       User user = User.builder()
-          .email(email)
-          .password(passwordEncoder.encode("1111"))
-          .name(nickname)
-          .social(true)
+          .email(oAuth2Response.getEmail())
+          .username(username)
+          .password("1111")
+          .name(oAuth2Response.getName())
           .role(UserRole.USER)
+          .social(true)
           .build();
 
       userRepository.save(user);
 
-      //UserSecurityDto 구성 및 반환
-      UserSecurityDto userSecurityDto = new UserSecurityDto(email, "1111", nickname, true, List.of(new SimpleGrantedAuthority("ROLE_USER")));
-      userSecurityDto.setProps(params);
+      UserDto userDto = new UserDto();
+      userDto.setUsername(username);
+      userDto.setName(oAuth2Response.getName());
+      userDto.setRole(String.valueOf(UserRole.USER));
 
-      return userSecurityDto;
-
+      return new CustomOAuth2User(userDto);
     } else {
 
-      User user = result.get();
-      return new UserSecurityDto(
-              user.getEmail(),
-              user.getPassword(),
-              user.getName(),
-              user.isSocial(),
-              user.getAuthorities());
+      User user = optionalUser.get();
+      user.updateEmail(oAuth2Response.getEmail());
+      user.updateName(oAuth2Response.getName());
+
+      userRepository.save(user);
+
+      UserDto userDto = new UserDto();
+      userDto.setUsername(user.getUsername());
+      userDto.setName(oAuth2Response.getName());
+      userDto.setRole(String.valueOf(user.getRole()));
+
+      return new CustomOAuth2User(userDto);
     }
   }
-
-
-  private Map<String, String> getKakaoUserInfo(Map<String, Object> paramMap){
-
-    log.info("KAKAO-----------------------------------");
-
-    Object value = paramMap.get("kakao_account");
-
-    log.info(value);
-
-    LinkedHashMap accountMap = (LinkedHashMap) value;
-
-    String email = (String) accountMap.get("email");
-
-    // profile 객체 가져오기
-    Object profileObject = accountMap.get("profile");
-    LinkedHashMap profileMap = (LinkedHashMap) profileObject;
-
-    // nickname 값 가져오기
-    String nickname = (String) profileMap.get("nickname");
-
-    log.info("email..." + email);
-    log.info("nickname: " + nickname);
-
-    Map<String, String> kakaoUserInfo = new HashMap<>();
-    kakaoUserInfo.put("email", email);
-    kakaoUserInfo.put("nickname", nickname);
-
-    return kakaoUserInfo;
-  }
-
 }
-
