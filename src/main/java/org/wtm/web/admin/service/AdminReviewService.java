@@ -1,9 +1,8 @@
 package org.wtm.web.admin.service;
 
-import org.wtm.web.admin.dto.review.ReviewCommentCreateDto;
-import org.wtm.web.admin.dto.review.ReviewCommentResponseDto;
-import org.wtm.web.admin.dto.review.ReviewCommentUpdateDto;
-import org.wtm.web.admin.dto.review.ReviewListDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.wtm.web.admin.dto.review.*;
 
 import java.util.List;
 
@@ -12,7 +11,7 @@ public interface AdminReviewService {
     /*
      * 리뷰조회
      */
-    public List<ReviewListDto> getReviewsByStoreId(Long storeId);
+    public ReviewPageResponse getReviewsByStoreId(Long storeId, Pageable pageable);
 
     /*
      * 리뷰 답글 작성

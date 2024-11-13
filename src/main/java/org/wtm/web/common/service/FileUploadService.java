@@ -49,7 +49,7 @@ public class FileUploadService implements UploadService{
             file.transferTo(dest);
 
             // 브라우저 접근 가능한 URL 추가
-            return "/uploads/" + uploadDir + "/" + dateFolder + "/" + newFileName;
+            return "/uploads/" + uploadDir + File.separator + dateFolder + File.separator+ newFileName;
 
         } catch (IOException e) {
             // 파일 업로드에 실패 시 작업 반환
@@ -77,7 +77,6 @@ public class FileUploadService implements UploadService{
                   filePaths.add(null);
               }else {
                   try {
-
                       String uuid = UUID.randomUUID().toString();
                       String originalFileExtension = getFileExtension(file.getOriginalFilename());
                       String newFileName = uuid + originalFileExtension;
@@ -88,7 +87,7 @@ public class FileUploadService implements UploadService{
                       file.transferTo(dest);
 
                       // 브라우저 접근 가능한 URL 추가
-                      filePaths.add("/uploads/" + uploadDirType + "/" + dateFolder + "/" + newFileName);
+                      filePaths.add("/uploads/" + uploadDirType + File.separator + dateFolder + File.separator + newFileName);
                   } catch (IOException e) {
                       throw new RuntimeException("Failed to upload file", e);
                   }

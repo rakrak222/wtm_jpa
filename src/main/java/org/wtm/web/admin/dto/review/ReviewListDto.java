@@ -15,6 +15,7 @@ public class ReviewListDto {
     private String userProfilePicture;
     private String adminProfilePicture;
     private List<ReviewCommentDto> reviewComments;
+    private List<String> reviewImgs;
     private Double reviewScore;
     private LocalDateTime reviewRegDate;
 }
