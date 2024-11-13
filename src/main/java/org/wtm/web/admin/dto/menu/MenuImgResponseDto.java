@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
+import org.wtm.web.menu.model.Meal;
 
 import java.util.List;
 
@@ -12,6 +13,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MenuImgCreateDto {
-    private MultipartFile img;
+public class MenuImgResponseDto {
+    private List<String> imgs;
 }

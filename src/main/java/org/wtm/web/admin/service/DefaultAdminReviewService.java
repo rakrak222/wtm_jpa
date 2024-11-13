@@ -1,12 +1,11 @@
 package org.wtm.web.admin.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.wtm.web.admin.dto.review.ReviewCommentCreateDto;
-import org.wtm.web.admin.dto.review.ReviewCommentResponseDto;
-import org.wtm.web.admin.dto.review.ReviewCommentUpdateDto;
-import org.wtm.web.admin.dto.review.ReviewListDto;
+import org.wtm.web.admin.dto.review.*;
 import org.wtm.web.admin.mapper.AdminReviewCommentMapper;
 import org.wtm.web.admin.mapper.AdminReviewMapper;
 import org.wtm.web.admin.repository.AdminReviewCommentRepository;
@@ -37,11 +36,17 @@ public class DefaultAdminReviewService implements AdminReviewService {
      * 리뷰조회
      */
     @Transactional(readOnly = true)
-    public List<ReviewListDto> getReviewsByStoreId(Long storeId) {
-        List<Review> reviews = reviewRepository.findAllByStoreId(storeId);
-        return reviews.stream()
+    public ReviewPageResponse getReviewsByStoreId(Long storeId, Pageable pageable) {
+        Page<Review> reviewPage = reviewRepository.findAllByStoreId(storeId, pageable);
+        List<ReviewListDto> reviewList = reviewPage.stream()
                 .map(reviewMapper::toReviewListDto)
                 .collect(Collectors.toList());
+        return ReviewPageResponse.builder()
+                .reviews(reviewList)
+                .currentPage(reviewPage.getNumber())
+                .totalPages(reviewPage.getTotalPages())
+                .totalItems(reviewPage.getTotalElements())
+                .build();
     }
 
     /**

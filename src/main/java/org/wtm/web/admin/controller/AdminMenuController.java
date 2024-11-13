@@ -1,7 +1,5 @@
 package org.wtm.web.admin.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -10,9 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.wtm.web.admin.dto.menu.*;
 import org.wtm.web.admin.service.AdminMenuService;
-import org.wtm.web.menu.model.Menu;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,55 +31,76 @@ public class AdminMenuController {
         }
     }
 
-    @PostMapping(value = "/stores/{storeId}/menus", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<List<MenuResponseDto>> createMenus(
-            @PathVariable Long storeId,
-            @RequestParam("mealDate") LocalDate mealDate,
-            @RequestParam("menuDtos") String menuDtosJson, // 여러 DTO
-            @RequestPart(value = "imgs", required = false) List<MultipartFile> imgs
-    ) {
+    @GetMapping("/stores/{storeId}/menuImgs")
+    public ResponseEntity<List<MenuImgDto>> getMenuImgs(@PathVariable Long storeId,
+                                                        @RequestParam("date") String date) {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            List<MenuCreateDto> menuCreateDtos = objectMapper.readValue(
-                    menuDtosJson,
-                    new TypeReference<List<MenuCreateDto>>() {}
-            );
-
-            MealCreateDto mealCreateDto = new MealCreateDto();
-            mealCreateDto.setMealDate(mealDate);
-
-            List<MenuResponseDto> createdMenus = adminMenuService.addMenus(storeId, mealCreateDto, menuCreateDtos, imgs);
-            return new ResponseEntity<>(createdMenus, HttpStatus.CREATED);
-        } catch (IOException e) {
-            e.printStackTrace(); // 에러 로깅 추가
+            LocalDateTime mealDate = LocalDate.parse(date).atStartOfDay();
+            List<MenuImgDto> imgs = adminMenuService.getMenusImgByStoreIdAndDate(storeId, mealDate);
+            return new ResponseEntity<>(imgs, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
+    @PostMapping("/stores/{storeId}/menus")
+    public ResponseEntity<?> createMenus(
+            @PathVariable Long storeId,
+            @RequestBody MenuRequestDto request // 여러 DTO
+    ) {
+        try {
+            System.out.println("createMenus called with storeId: " + storeId + ", request: " + request);
 
+            LocalDate mealDate = LocalDate.parse(request.getMealDate());
+            List<MenuCreateDto> menuCreateDtos = request.getMenuDtos();
 
+            MealCreateDto mealCreateDto = MealCreateDto.builder().mealDate(mealDate).build();
+            List<MenuCreateDto> menuCreateDtoList = adminMenuService.addMenus(storeId, mealCreateDto, menuCreateDtos);
+            return new ResponseEntity<>(menuCreateDtoList, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
 
-    @PutMapping(value ="/stores/{storeId}/menus/{menuId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value="/stores/{storeId}/menuImgs", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MenuImgResponseDto> addMenuImgs(
+            @PathVariable Long storeId,
+            @RequestParam("mealDate") String date,
+            @RequestPart(value = "imgs", required = false) List<MultipartFile> imgs
+    ){
+        try{
+            LocalDate mealDate = LocalDate.parse(date);
+            MealCreateDto mealCreateDto = MealCreateDto.builder().mealDate(mealDate).build();
+            MenuImgResponseDto response = adminMenuService.addMenuPictures(storeId, mealCreateDto, imgs);
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/stores/{storeId}/menus/{menuId}")
     public ResponseEntity<MenuResponseDto> updateMenu(
             @PathVariable Long storeId,
             @PathVariable Long menuId,
-            @RequestParam("mealDate") LocalDate mealDate,
-            @RequestParam("menuDto") String menuDtoJson, // 단일 DTO
-            @RequestParam("imgs") List<MultipartFile> imgs
+            @RequestBody MenuUpdateRequestDto request
     ){
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            MenuCreateDto menuCreateDto = objectMapper.readValue(menuDtoJson, MenuCreateDto.class);
+            System.out.println("updateMenu called with storeId: " + storeId + ", menuId: " + menuId + ", request: " + request);
 
-            MealCreateDto mealCreateDto = new MealCreateDto();
-            mealCreateDto.setMealDate(mealDate);
+            LocalDate mealDate = request.getMealDate();
+            MenuCreateDto menuCreateDto = request.getMenuDto();
 
-            MenuResponseDto updateMenus = adminMenuService.updateMenu(storeId, menuId, mealCreateDto, menuCreateDto, imgs);
-            return new ResponseEntity<>(updateMenus, HttpStatus.OK);
-        } catch (IOException e) {
+            MealCreateDto mealCreateDto = MealCreateDto.builder().mealDate(mealDate).build();
+
+            MenuResponseDto updatedMenu = adminMenuService.updateMenu(storeId, menuId, mealCreateDto, menuCreateDto);
+            return new ResponseEntity<>(updatedMenu, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
+
 
     @DeleteMapping("/stores/{storeId}/menus/{menuId}")
     public ResponseEntity<Void> deleteMenu(
@@ -99,14 +116,19 @@ public class AdminMenuController {
         }
     }
 
-
-    @GetMapping("/highlighted-dates")
-    public ResponseEntity<List<String>> getHighlightedDates(@RequestParam Long storeId) {
-        List<String> highlightedDates = adminMenuService.getDatesWithMenus(storeId);
-        return ResponseEntity.ok(highlightedDates);
+    @DeleteMapping("/stores/{storeId}/menuImgs/{menuImgId}")
+    public ResponseEntity<Void> deleteMenuImg(
+            @PathVariable Long storeId,
+            @PathVariable Long menuImgId
+    ){
+        try{
+            adminMenuService.deleteMenuImg(storeId, menuImgId);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
-
-
-
 
 }

@@ -8,5 +8,6 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder
 public class MenuImgDto {
+    private Long id;
     private String url;
 }

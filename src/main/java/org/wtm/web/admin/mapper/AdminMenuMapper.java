@@ -18,19 +18,13 @@ import java.util.stream.Collectors;
 public class AdminMenuMapper {
 
     public MenuListDto toMenuListDto(Menu menu){
-        // MenuImg 리스트에서 이미지 URL만 추출
-        List<String> menuImages = menu.getMeal().getMenuImg().stream()
-                .map(MenuImg::getImg)  // MenuImg 엔티티에서 img 필드만 추출
-                .collect(Collectors.toList());
 
         return new MenuListDto(
                 menu.getId(),
                 menu.getMeal().getId(),
                 menu.getUser().getId(),
                 menu.getCategory().getId(),
-                menu.getStore().getId(),
                 menu.getName(),
-                menuImages,  // 추출한 이미지 URL 리스트를 설정
                 menu.getRegDate(),
                 menu.getModDate()
         );
@@ -47,18 +41,12 @@ public class AdminMenuMapper {
                 .build();
     }
 
-    // 여러 MenuCreateDto -> Menu 엔티티 리스트 변환
-    public List<Menu> toMenuEntities(List<MenuCreateDto> dtos, Store store, MenuCategory category, User user) {
-        return dtos.stream()
-                .map(dto -> toMenuEntity(dto, store, category, user)) // 단일 엔티티 변환 메서드 재사용
-                .collect(Collectors.toList());
-    }
 
-    // 여러 Menu -> MenuListDto 변환
-    public List<MenuListDto> toMenuListDtos(List<Menu> menus) {
-        return menus.stream()
-                .map(this::toMenuListDto) // 단일 변환 메서드 재사용
-                .collect(Collectors.toList());
+    public MenuImgDto toMenuImgDto(MenuImg menuImg){
+        return new MenuImgDto(
+                menuImg.getId(),
+                menuImg.getImg()
+        );
     }
 
 

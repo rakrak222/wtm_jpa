@@ -1,12 +1,11 @@
 package org.wtm.web.admin.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.wtm.web.admin.dto.notice.NoticeCreateDto;
-import org.wtm.web.admin.dto.notice.NoticeDto;
-import org.wtm.web.admin.dto.notice.NoticeListDto;
-import org.wtm.web.admin.dto.notice.NoticeUpdateDto;
+import org.wtm.web.admin.dto.notice.*;
 import org.wtm.web.admin.mapper.AdminNoticeMapper;
 import org.wtm.web.admin.repository.AdminNoticeRepository;
 import org.wtm.web.admin.repository.AdminReviewRepository;
@@ -33,11 +32,17 @@ public class DefaultAdminNoticeService implements AdminNoticeService {
      * 공지 조회
      */
     @Override
-    public List<NoticeListDto> getNoticesByStoreId(Long storeId) {
-        List<Notice> notices = noticeRepository.findNoticesWithUserByStoreId(storeId);
-        return notices.stream()
+    public NoticePageResponse getNoticesByStoreId(Long storeId, Pageable pageable) {
+        Page<Notice> noticePage = noticeRepository.findNoticesWithUserByStoreId(storeId, pageable);
+        List<NoticeListDto> noticeList = noticePage.stream()
                 .map(noticeMapper::toNoticeListDto)
                 .collect(Collectors.toList());
+        return NoticePageResponse.builder()
+                .notices(noticeList)
+                .currentPage(noticePage.getNumber())
+                .totalPages(noticePage.getTotalPages())
+                .totalItems(noticePage.getTotalElements())
+                .build();
     }
 
     /**

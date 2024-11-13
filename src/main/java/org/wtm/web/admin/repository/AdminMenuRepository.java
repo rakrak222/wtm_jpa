@@ -16,5 +16,4 @@ public interface AdminMenuRepository extends JpaRepository<Menu, Long> {
 
     List<Menu> findAllByMeal(Meal meal);
 
-    List<String> findDistinctMenuDatesByStoreId(Long storeId);
 }
