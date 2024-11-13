@@ -4,6 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -54,11 +57,14 @@ public class ReviewController {
     }
 
     @GetMapping("/{storeId}/reviews")
-    public ResponseEntity<List<ReviewListDto>> getReviews(
+    public ResponseEntity<Slice<ReviewListDto>> getReviews(
             @PathVariable Long storeId,
-            @RequestParam(defaultValue = "date") String sortOption) {
+            @RequestParam(defaultValue = "date") String sortOption,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
         try {
-            List<ReviewListDto> reviews = reviewService.getReviewsByStoreId(storeId, sortOption);
+            Pageable pageable = PageRequest.of(page, size);
+            Slice<ReviewListDto> reviews = reviewService.getReviewsByStoreId(storeId, sortOption, pageable);
             return new ResponseEntity<>(reviews, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

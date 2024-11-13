@@ -2,6 +2,8 @@ package org.wtm.web.review.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -100,9 +102,8 @@ public class DefaultReviewService implements ReviewService {
 //    }
     @Override
     @Transactional(readOnly = true)
-    public List<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption) {
-        // 레포지토리에서 ReviewListDto 리스트를 직접 받아서 반환
-        List<ReviewListDto> reviews = reviewRepositoryCustom.findAllByStoreIdWithSorting(storeId, sortOption);
+    public Slice<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption, Pageable pageable) {
+        Slice<ReviewListDto> reviews = reviewRepositoryCustom.findAllByStoreIdWithSorting(storeId, sortOption, pageable);
 
         reviews.forEach(review -> {
             review.setRelativeDate(calculateRelativeDate(review.getReviewRegDate()));

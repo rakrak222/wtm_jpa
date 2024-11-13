@@ -44,6 +44,8 @@ public class QReview extends EntityPathBase<Review> {
 
     public final org.wtm.web.store.model.QStore store;
 
+    public final org.wtm.web.ticket.model.QTicketHistoryUsage ticketHistoryUsage;
+
     public final org.wtm.web.user.model.QUser user;
 
     public QReview(String variable) {
@@ -65,6 +67,7 @@ public class QReview extends EntityPathBase<Review> {
     public QReview(Class<? extends Review> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.store = inits.isInitialized("store") ? new org.wtm.web.store.model.QStore(forProperty("store"), inits.get("store")) : null;
+        this.ticketHistoryUsage = inits.isInitialized("ticketHistoryUsage") ? new org.wtm.web.ticket.model.QTicketHistoryUsage(forProperty("ticketHistoryUsage"), inits.get("ticketHistoryUsage")) : null;
         this.user = inits.isInitialized("user") ? new org.wtm.web.user.model.QUser(forProperty("user")) : null;
     }
 

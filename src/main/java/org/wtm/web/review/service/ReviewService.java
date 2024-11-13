@@ -1,5 +1,7 @@
 package org.wtm.web.review.service;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.web.multipart.MultipartFile;
 import org.wtm.web.review.dto.*;
 
@@ -12,7 +14,7 @@ public interface ReviewService {
     void addReview(Long storeId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files, Long userId);
 
 
-    List<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption);
+    Slice<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption, Pageable pageable);
 
     ReviewCountDto getReviewCount(long storeId);
 }

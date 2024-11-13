@@ -15,6 +15,7 @@ import org.wtm.web.store.model.StoreSns;
 import org.wtm.web.store.service.StoreService;
 import org.wtm.web.ticket.model.Ticket;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -44,14 +45,34 @@ public class DefaultStoreService implements StoreService {
         return result;
     }
 
-    // 가게 조회(검색 기능 포함)
+    // 가게 조회(검색 기능 포함 - 이름 기준)
+//    @Override
+//    @Transactional
+//    public List<StoreResponseDto> getStores(String query) {
+//        List<Store> stores;
+//
+//        if(query != null && !query.isEmpty()) {
+//            stores = storeRepository.searchStores(query);
+//        } else {
+//            stores = storeRepository.findAllWithDetails();
+//        }
+//
+//        List<StoreResponseDto> result = stores.stream()
+//                .map(StoreMapper::toDto)
+//                .collect(Collectors.toList());
+//
+//        return result;
+//    }
+
+    // 가게 조회(검색 기능 포함 - 이름 및 오늘의 메뉴)
     @Override
     @Transactional
-    public List<StoreResponseDto> getStores(String query) {
+    public List<StoreResponseDto> getStores(String query){
+
         List<Store> stores;
 
         if(query != null && !query.isEmpty()) {
-            stores = storeRepository.searchStores(query);
+            stores = storeRepository.searchStoresByNameOrTodayMenu(query);
         } else {
             stores = storeRepository.findAllWithDetails();
         }

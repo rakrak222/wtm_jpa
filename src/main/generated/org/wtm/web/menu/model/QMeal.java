@@ -30,6 +30,8 @@ public class QMeal extends EntityPathBase<Meal> {
 
     public final ListPath<MenuImg, QMenuImg> menuImg = this.<MenuImg, QMenuImg>createList("menuImg", MenuImg.class, QMenuImg.class, PathInits.DIRECT2);
 
+    public final ListPath<Menu, QMenu> menus = this.<Menu, QMenu>createList("menus", Menu.class, QMenu.class, PathInits.DIRECT2);
+
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modDate = _super.modDate;
 

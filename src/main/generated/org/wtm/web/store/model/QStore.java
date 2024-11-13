@@ -36,6 +36,8 @@ public class QStore extends EntityPathBase<Store> {
 
     public final StringPath img = createString("img");
 
+    public final ListPath<org.wtm.web.menu.model.Meal, org.wtm.web.menu.model.QMeal> meals = this.<org.wtm.web.menu.model.Meal, org.wtm.web.menu.model.QMeal>createList("meals", org.wtm.web.menu.model.Meal.class, org.wtm.web.menu.model.QMeal.class, PathInits.DIRECT2);
+
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modDate = _super.modDate;
 
