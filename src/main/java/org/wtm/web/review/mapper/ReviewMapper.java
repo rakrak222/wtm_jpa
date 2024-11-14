@@ -38,7 +38,8 @@ public class ReviewMapper {
                         comment.getId(),
                         comment.getContent(),
                         comment.getUser().getName(),
-                        comment.getUser().getProfilePicture()
+                        comment.getUser().getProfilePicture(),
+                        comment.getRegDate()
                 ))
                 .collect(Collectors.toList());
     }

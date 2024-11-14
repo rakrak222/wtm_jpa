@@ -7,6 +7,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.wtm.web.menu.dto.NoticeResponseDto;
+import org.wtm.web.store.dto.StoreAddressResponseDto;
 import org.wtm.web.store.dto.StoreDetailResponseDto;
 import org.wtm.web.store.dto.StoreResponseDto;
 import org.wtm.web.store.dto.StoreReviewStatsDto;
@@ -40,6 +41,16 @@ public class StoreController {
     public ResponseEntity<?> getStores(@RequestParam(required = false) String query) {
         List<StoreResponseDto> stores = storeService.getStores(query);
 
+        if (stores.isEmpty()) {
+            return ResponseEntity.status(404).body("식당 목록이 없습니다.");
+        }
+        return ResponseEntity.ok(stores);
+    }
+
+    // 식당 주소 조회
+    @GetMapping("/address")
+    public ResponseEntity<?> getStoreAddress(){
+        List<StoreAddressResponseDto> stores = storeService.getStoresAddress();
         if (stores.isEmpty()) {
             return ResponseEntity.status(404).body("식당 목록이 없습니다.");
         }

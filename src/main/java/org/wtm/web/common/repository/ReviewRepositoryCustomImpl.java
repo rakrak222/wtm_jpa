@@ -88,7 +88,8 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
                         reviewComment.id.as("commentId"),
                         reviewComment.content.as("commentContent"),
                         reviewComment.user.name.as("adminName"),
-                        reviewComment.user.profilePicture.as("adminProfilePicture")
+                        reviewComment.user.profilePicture.as("adminProfilePicture"),
+                        reviewComment.regDate.as("commentRegDate")
                 ))
                 .from(reviewComment)
                 .where(reviewComment.review.store.id.eq(storeId))

@@ -45,16 +45,7 @@ public class ReviewController {
     }
 
 
-//    @GetMapping("/{storeId}/reviews")
-    public ResponseEntity<List<ReviewListDto>> getReviews(@PathVariable Long storeId){
-        try {
-            List<ReviewListDto> reviews = reviewService.getReviewsByStoreId(storeId);
-            return new ResponseEntity<>(reviews, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
 
-    }
 
     @GetMapping("/{storeId}/reviews")
     public ResponseEntity<Slice<ReviewListDto>> getReviews(

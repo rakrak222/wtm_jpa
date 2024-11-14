@@ -2,6 +2,7 @@ package org.wtm.web.store.service;
 
 
 
+import org.wtm.web.store.dto.StoreAddressResponseDto;
 import org.wtm.web.store.dto.StoreDetailResponseDto;
 import org.wtm.web.store.dto.StoreResponseDto;
 import org.wtm.web.store.dto.StoreReviewStatsDto;
@@ -18,4 +19,6 @@ public interface StoreService {
     StoreReviewStatsDto getStoreReviewStats(Long storeId);
 
     StoreDetailResponseDto getStoreDetailsById(Long storeId);
+
+    List<StoreAddressResponseDto> getStoresAddress();
 }

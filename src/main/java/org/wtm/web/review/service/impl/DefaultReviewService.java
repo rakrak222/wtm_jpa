@@ -77,29 +77,7 @@ public class DefaultReviewService implements ReviewService {
         return ReviewCountMapper.toDto(reviewCount);
     }
 
-    /**
-     * 리뷰조회 version 1
-     */
-    @Transactional(readOnly = true)
-    public List<ReviewListDto> getReviewsByStoreId(Long storeId) {
-        List<Review> reviews = reviewRepository.findAllByStoreId(storeId);
-        return reviews.stream()
-                .map(reviewMapper::toReviewListDto)
-                .collect(Collectors.toList());
-    }
 
-    /**
-     * 리뷰조회 version 2 (동적관리)
-     */
-
-//    @Override
-//    @Transactional(readOnly = true)
-//    public List<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption) {
-//        List<Review> reviews = reviewRepositoryCustom.findAllByStoreIdWithSorting(storeId, sortOption);
-//        return reviews.stream()
-//                .map(reviewMapper::toReviewListDto)
-//                .collect(Collectors.toList());
-//    }
     @Override
     @Transactional(readOnly = true)
     public Slice<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption, Pageable pageable) {
@@ -107,7 +85,10 @@ public class DefaultReviewService implements ReviewService {
 
         reviews.forEach(review -> {
             review.setRelativeDate(calculateRelativeDate(review.getReviewRegDate()));
+
         });
+
+
 
         return reviews;
     }

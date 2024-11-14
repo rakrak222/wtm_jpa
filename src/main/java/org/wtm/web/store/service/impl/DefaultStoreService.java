@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wtm.web.common.repository.StoreRepository;
+import org.wtm.web.store.dto.StoreAddressResponseDto;
 import org.wtm.web.store.dto.StoreDetailResponseDto;
 import org.wtm.web.store.dto.StoreResponseDto;
 import org.wtm.web.store.dto.StoreReviewStatsDto;
@@ -45,24 +46,6 @@ public class DefaultStoreService implements StoreService {
         return result;
     }
 
-    // 가게 조회(검색 기능 포함 - 이름 기준)
-//    @Override
-//    @Transactional
-//    public List<StoreResponseDto> getStores(String query) {
-//        List<Store> stores;
-//
-//        if(query != null && !query.isEmpty()) {
-//            stores = storeRepository.searchStores(query);
-//        } else {
-//            stores = storeRepository.findAllWithDetails();
-//        }
-//
-//        List<StoreResponseDto> result = stores.stream()
-//                .map(StoreMapper::toDto)
-//                .collect(Collectors.toList());
-//
-//        return result;
-//    }
 
     // 가게 조회(검색 기능 포함 - 이름 및 오늘의 메뉴)
     @Override
@@ -83,6 +66,22 @@ public class DefaultStoreService implements StoreService {
 
         return result;
     }
+    @Override
+    @Transactional
+    public List<StoreAddressResponseDto> getStoresAddress() {
+
+
+        List<Store> stores = storeRepository.findAllWithDetails();
+
+        // Entity를 DTO로 변환
+        return stores.stream()
+                .map(store -> StoreAddressResponseDto.builder()
+                        .storeName(store.getName())
+                        .address(store.getAddress())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
 
     @Override
     @Transactional
@@ -100,6 +99,7 @@ public class DefaultStoreService implements StoreService {
         // StoreDetailMapper를 사용하여 필요한 필드만 가진 DTO로 변환
         return storeDetailMapper.toDto(store, storeSnsList, ticketList);
     }
+
 
 
     @Override
