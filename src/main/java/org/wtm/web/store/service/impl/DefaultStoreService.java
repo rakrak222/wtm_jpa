@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wtm.web.common.repository.StoreRepository;
+import org.wtm.web.common.service.GeocodingService;
 import org.wtm.web.store.dto.StoreAddressResponseDto;
 import org.wtm.web.store.dto.StoreDetailResponseDto;
 import org.wtm.web.store.dto.StoreResponseDto;
@@ -28,6 +29,7 @@ public class DefaultStoreService implements StoreService {
 
     private final StoreRepository storeRepository;
     private final StoreDetailMapper storeDetailMapper;
+    private final GeocodingService geocodingService;
 
 
 
@@ -67,18 +69,25 @@ public class DefaultStoreService implements StoreService {
         return result;
     }
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public List<StoreAddressResponseDto> getStoresAddress() {
-
-
         List<Store> stores = storeRepository.findAllWithDetails();
 
-        // Entity를 DTO로 변환
+        // Entity를 DTO로 변환하며 Geocoding을 통해 위도와 경도 추가
         return stores.stream()
-                .map(store -> StoreAddressResponseDto.builder()
-                        .storeName(store.getName())
-                        .address(store.getAddress())
-                        .build())
+                .map(store -> {
+                    Optional<GeocodingService.Coordinates> coordinatesOpt = geocodingService.getCoordinates(store.getAddress());
+                    Double latitude = coordinatesOpt.map(GeocodingService.Coordinates::getLatitude).orElse(null);
+                    Double longitude = coordinatesOpt.map(GeocodingService.Coordinates::getLongitude).orElse(null);
+
+                    return StoreAddressResponseDto.builder()
+                            .storeId((store.getId()))
+                            .storeName(store.getName())
+                            .address(store.getAddress())
+                            .latitude(latitude)
+                            .longitude(longitude)
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 
