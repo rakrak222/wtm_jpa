@@ -20,7 +20,7 @@ public class ReviewMapper {
         return ReviewListDto.builder()
                 .reviewId(review.getId())
                 .reviewContent(review.getContent())
-                .reviewImageUrls(review.getReviewImages().stream()  // 이미지 URL 리스트 설정
+                .reviewImageUrls(review.getReviewImgs().stream()  // 이미지 URL 리스트 설정
                         .map(ReviewImg::getImg)
                         .collect(Collectors.toList()))
                 .userName(review.getUser().getName())

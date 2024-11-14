@@ -24,10 +24,14 @@ public class QTicket extends EntityPathBase<Ticket> {
 
     public final org.wtm.web.common.entity.QBaseTimeEntity _super = new org.wtm.web.common.entity.QBaseTimeEntity(this);
 
+    public final NumberPath<Long> category = createNumber("category", Long.class);
+
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modDate = _super.modDate;
+
+    public final StringPath name = createString("name");
 
     public final NumberPath<Long> price = createNumber("price", Long.class);
 

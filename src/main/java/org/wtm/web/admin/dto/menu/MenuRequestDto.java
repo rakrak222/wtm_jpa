@@ -14,6 +14,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MenuRequestDto {
-    private MealCreateDto mealCreateDto;
-    private List<MenuCreateDto> menuCreateDtos;
+    private String mealDate;
+    private List<MenuCreateDto> menuDtos;
 }

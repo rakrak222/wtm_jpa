@@ -1,13 +1,12 @@
 package org.wtm.web.admin.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.wtm.web.admin.dto.notice.NoticeCreateDto;
-import org.wtm.web.admin.dto.notice.NoticeDto;
-import org.wtm.web.admin.dto.notice.NoticeListDto;
-import org.wtm.web.admin.dto.notice.NoticeUpdateDto;
+import org.wtm.web.admin.dto.notice.*;
 import org.wtm.web.admin.service.AdminNoticeService;
 import org.wtm.web.store.model.Notice;
 
@@ -21,10 +20,13 @@ public class AdminNoticeController {
     private final AdminNoticeService adminNoticeService;
 
     @GetMapping("/stores/{storeId}/notices")
-    public ResponseEntity<List<NoticeListDto>> getNotices(@PathVariable Long storeId){
+    public ResponseEntity<NoticePageResponse> getNotices(@PathVariable Long storeId,
+                                                         @RequestParam(defaultValue = "0") int page,
+                                                         @RequestParam(defaultValue = "5") int size){
         try {
-            List<NoticeListDto> notices = adminNoticeService.getNoticesByStoreId(storeId);
-            return new ResponseEntity<>(notices, HttpStatus.OK);
+            Pageable pageable = PageRequest.of(page, size);
+            NoticePageResponse response = adminNoticeService.getNoticesByStoreId(storeId, pageable);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
