@@ -1,9 +1,11 @@
 package org.wtm.web.user.dto;
 
+import jakarta.persistence.Embedded;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.wtm.web.auth.dto.Address;
 
 @Data
 @Builder
@@ -15,7 +17,10 @@ public class UserResponseDto {
     private String name;           // 사용자 이름 또는 닉네임
     private String password;       // 사용자 비밀번호
     private String role;           // 사용자 권한 (예: USER, ADMIN)
-    private String address;        // 주소
+
+    @Embedded
+    private Address address;        // 주소
+
     private String phone;          // 전화번호
     private String profilePicture; // 프로필 사진 URL
 

@@ -1,10 +1,12 @@
 package org.wtm.web.user.dto;
 
+import jakarta.persistence.Embedded;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
+import org.wtm.web.auth.dto.Address;
 import org.wtm.web.user.model.User;
 import org.wtm.web.user.constants.UserRole;
 
@@ -18,9 +20,11 @@ public class SignUpUserDto {
     private String name;           // 사용자 이름 또는 닉네임
     private String password;       // 사용자 비밀번호
     private String role;           // 사용자 권한 (예: USER, ADMIN)
-    private String address;        // 주소
     private String phone;          // 전화번호
     private MultipartFile profilePicture; // 프로필 사진 파일 (업로드된 파일)
+
+    @Embedded
+    private Address address;        // 주소
 
     // User 엔티티로 변환
     public User toEntity(String encodedPassword, String profilePictureUrl) {
