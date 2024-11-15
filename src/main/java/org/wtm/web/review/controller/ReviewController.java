@@ -54,13 +54,16 @@ public class ReviewController {
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size) {
         try {
+
+            Long userId = 2L;
             Pageable pageable = PageRequest.of(page, size);
-            Slice<ReviewListDto> reviews = reviewService.getReviewsByStoreId(storeId, sortOption, pageable);
+            Slice<ReviewListDto> reviews = reviewService.getReviewsByStoreId(storeId, sortOption, pageable, userId);
             return new ResponseEntity<>(reviews, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
 
 
 
@@ -89,6 +92,20 @@ public class ReviewController {
         // 리뷰 서비스 호출
         reviewService.addReview(storeId, reviewRequestDto, files, userId);
         return ResponseEntity.status(201).body(Map.of("message", "리뷰가 성공적으로 등록되었습니다."));
+    }
+
+    @PostMapping("{storeId}/reviews/{reviewId}/reviewLike")
+    public ResponseEntity<?> addReviewLike(@PathVariable Long reviewId) {
+        Long FIXED_USER_ID = 2L;
+        reviewService.addReviewLike(reviewId, FIXED_USER_ID);
+        return ResponseEntity.ok("리뷰 Like가 활성화 되었습니다.");
+    }
+
+    @DeleteMapping("{storeId}/reviews/{reviewId}/reviewLike")
+    public ResponseEntity<?> removeReviewLike(@PathVariable Long reviewId) {
+        Long FIXED_USER_ID = 2L;
+        reviewService.removeReviewLike(reviewId, FIXED_USER_ID);
+        return ResponseEntity.ok("리뷰 Like가 삭제 되었습니다.");
     }
 
 

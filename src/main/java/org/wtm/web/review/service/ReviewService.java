@@ -14,7 +14,13 @@ public interface ReviewService {
     void addReview(Long storeId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files, Long userId);
 
 
-    Slice<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption, Pageable pageable);
+    Slice<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption, Pageable pageable, Long UserId);
 
     ReviewCountDto getReviewCount(long storeId);
+
+
+
+    void addReviewLike(Long reviewId, Long fixedUserId);
+
+    void removeReviewLike(Long reviewId, Long fixedUserId);
 }

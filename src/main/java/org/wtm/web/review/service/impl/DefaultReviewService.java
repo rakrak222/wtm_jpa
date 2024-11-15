@@ -15,10 +15,7 @@ import org.wtm.web.review.mapper.ReviewCountMapper;
 import org.wtm.web.review.mapper.ReviewMapper;
 import org.wtm.web.review.mapper.ReviewScoreMapper;
 import org.wtm.web.review.mapper.ReviewStatsMapper;
-import org.wtm.web.review.model.Review;
-import org.wtm.web.review.model.ReviewImg;
-import org.wtm.web.review.model.ReviewScale;
-import org.wtm.web.review.model.ReviewScore;
+import org.wtm.web.review.model.*;
 import org.wtm.web.review.service.ReviewService;
 import org.wtm.web.store.model.Store;
 import org.wtm.web.user.model.User;
@@ -44,6 +41,7 @@ public class DefaultReviewService implements ReviewService {
     private final UserRepository userRepository;
     private final UploadService uploadService;
     private final ReviewImgRepository reviewImgRepository;
+    private final ReviewLikeRepository reviewLikeRepository;
 
     private final ReviewRepositoryCustom reviewRepositoryCustom;
 
@@ -77,39 +75,74 @@ public class DefaultReviewService implements ReviewService {
         return ReviewCountMapper.toDto(reviewCount);
     }
 
+    @Override
+    public void addReviewLike(Long reviewId, Long fixedUserId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 리뷰가 존재하지 않습니다."));
+
+        User user = userRepository.findById(fixedUserId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
+
+        ReviewLike reviewLike = ReviewLike.builder()
+                .review(review)
+                .user(user)
+                .build();
+
+        reviewLikeRepository.save(reviewLike);
+    }
+
+    @Override
+    public void removeReviewLike(Long reviewId, Long fixedUserId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 리뷰가 존재하지 않습니다."));
+
+        User user = userRepository.findById(fixedUserId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
+
+        ReviewLike reviewLike = reviewLikeRepository.findByUserAndReview(user, review)
+                .orElseThrow(() -> new IllegalArgumentException("리뷰 Like가 존재하지 않습니다."));
+
+                reviewLikeRepository.delete(reviewLike);
+
+    }
+
 
     @Override
     @Transactional(readOnly = true)
-    public Slice<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption, Pageable pageable) {
-        Slice<ReviewListDto> reviews = reviewRepositoryCustom.findAllByStoreIdWithSorting(storeId, sortOption, pageable);
+    public Slice<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption, Pageable pageable, Long userId) {
+        Slice<ReviewListDto> reviews = reviewRepositoryCustom.findAllByStoreIdWithSorting(storeId, sortOption, pageable, userId);
 
         reviews.forEach(review -> {
+            // 리뷰의 relativeDate 계산
             review.setRelativeDate(calculateRelativeDate(review.getReviewRegDate()));
 
+            // 댓글 리스트에 대해 relativeDate 계산
+            review.getReviewComments().forEach(comment -> {
+                comment.setRelativeDate(calculateRelativeDate(comment.getCommentRegDate()));
+            });
         });
-
-
 
         return reviews;
     }
-    
-    private String calculateRelativeDate(LocalDateTime reviewDate) {
+
+    private String calculateRelativeDate(LocalDateTime date) {
         LocalDateTime now = LocalDateTime.now();
-        Duration duration = Duration.between(reviewDate, now);
-        
-        if (duration.toMinutes() == 0) {
-            return "오늘";
+        Duration duration = Duration.between(date, now);
+
+        if (duration.toMinutes() < 60) {
+            return duration.toMinutes() + "분 전";
+        } else if (duration.toHours() < 24) {
+            return duration.toHours() + "시간 전";
         } else if (duration.toDays() < 7) {
             return duration.toDays() + "일 전";
         } else if (duration.toDays() < 30) {
-            return "일주일 전";
+            return "몇 주 전";
         } else if (duration.toDays() < 365) {
-            return "한 달 전";
+            return "몇 달 전";
         } else {
-            return "1년 전";
+            return "1년 이상";
         }
     }
-
 
 
 

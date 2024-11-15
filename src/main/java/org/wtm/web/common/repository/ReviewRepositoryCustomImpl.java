@@ -31,9 +31,10 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<ReviewListDto> findAllByStoreIdWithSorting(Long storeId, String sortOption, Pageable pageable) {
+    public Slice<ReviewListDto> findAllByStoreIdWithSorting(Long storeId, String sortOption, Pageable pageable, Long userId) {
         QReview review = QReview.review;
         QReviewScore reviewScore = QReviewScore.reviewScore;
+        QReviewLike reviewLike = QReviewLike.reviewLike;
         QReviewComment reviewComment = QReviewComment.reviewComment;
         QReviewImg reviewImg = QReviewImg.reviewImg;
 
@@ -48,7 +49,13 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
                         review.user.name.as("userName"),
                         review.user.profilePicture.as("userProfilePicture"),
                         avgScore.as("reviewScore"),
-                        review.regDate.as("reviewRegDate")
+                        review.regDate.as("reviewRegDate"),
+                        ExpressionUtils.as(
+                                JPAExpressions.select(reviewLike.count())
+                                        .from(reviewLike)
+                                        .where(reviewLike.review.id.eq(review.id)),
+                                "helpfulCount"
+                        )
                 ))
                 .from(review)
                 .leftJoin(review.reviewScores, reviewScore)
@@ -70,9 +77,13 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
         Map<Long, List<ReviewCommentDto>> commentMap = getReviewCommentsMap(storeId);
         Map<Long, List<String>> imageMap = getReviewImagesMap(storeId);
 
+        // liked 값 매핑
+        Map<Long, Boolean> likedMap = getLikedMap(storeId, userId);
+
         content.forEach(r -> {
             r.setReviewComments(commentMap.getOrDefault(r.getReviewId(), List.of()));
             r.setReviewImageUrls(imageMap.getOrDefault(r.getReviewId(), List.of()));
+            r.setLiked(likedMap.getOrDefault(r.getReviewId(), false)); // liked 값 설정
         });
 
         return new SliceImpl<>(content, pageable, hasNext);
@@ -115,4 +126,28 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
                         Collectors.mapping(tuple -> tuple.get(reviewImg.img), Collectors.toList())
                 ));
     }
+
+    private Map<Long, Boolean> getLikedMap(Long storeId, Long userId) {
+        QReviewLike reviewLike = QReviewLike.reviewLike;
+
+        if (userId == null) {
+            return Map.of(); // userId가 없으면 빈 맵 반환
+        }
+
+        List<Tuple> likes = queryFactory
+                .select(reviewLike.review.id, reviewLike.user.id)
+                .from(reviewLike)
+                .where(reviewLike.review.store.id.eq(storeId)
+                        .and(reviewLike.user.id.eq(userId)))
+                .fetch();
+
+        return likes.stream()
+                .collect(Collectors.toMap(
+                        tuple -> tuple.get(reviewLike.review.id), // 키: reviewId
+                        tuple -> true, // 값: liked 상태
+                        (existing, replacement) -> existing // 중복 시 기존 값 유지
+                ));
+    }
+
+
 }

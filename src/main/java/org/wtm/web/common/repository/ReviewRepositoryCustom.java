@@ -9,5 +9,5 @@ import java.util.List;
 public interface ReviewRepositoryCustom {
 //    List<Review> findAllByStoreIdWithSorting(Long storeId, String sortOption);
 
-    Slice<ReviewListDto> findAllByStoreIdWithSorting(Long storeId, String sortOption, Pageable pageable);
+    Slice<ReviewListDto> findAllByStoreIdWithSorting(Long storeId, String sortOption, Pageable pageable, Long userId);
 }

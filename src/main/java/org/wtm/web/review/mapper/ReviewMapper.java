@@ -33,14 +33,14 @@ public class ReviewMapper {
 
     private List<ReviewCommentDto> toReviewCommentDtoList(Review review) {
         return review.getReviewComments().stream()
-                .map(comment -> new ReviewCommentDto(
-                        review.getId(),  // reviewId 추가
-                        comment.getId(),
-                        comment.getContent(),
-                        comment.getUser().getName(),
-                        comment.getUser().getProfilePicture(),
-                        comment.getRegDate()
-                ))
+                .map(comment -> ReviewCommentDto.builder()
+                        .reviewId(review.getId()) // reviewId 설정
+                        .commentId(comment.getId())
+                        .commentContent(comment.getContent())
+                        .adminName(comment.getUser().getName())
+                        .adminProfilePicture(comment.getUser().getProfilePicture())
+                        .commentRegDate(comment.getRegDate())
+                        .build())
                 .collect(Collectors.toList());
     }
 

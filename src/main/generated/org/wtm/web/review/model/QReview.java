@@ -38,6 +38,8 @@ public class QReview extends EntityPathBase<Review> {
 
     public final ListPath<ReviewImg, QReviewImg> reviewImgs = this.<ReviewImg, QReviewImg>createList("reviewImgs", ReviewImg.class, QReviewImg.class, PathInits.DIRECT2);
 
+    public final ListPath<ReviewLike, QReviewLike> reviewLikes = this.<ReviewLike, QReviewLike>createList("reviewLikes", ReviewLike.class, QReviewLike.class, PathInits.DIRECT2);
+
     public final ListPath<ReviewScore, QReviewScore> reviewScores = this.<ReviewScore, QReviewScore>createList("reviewScores", ReviewScore.class, QReviewScore.class, PathInits.DIRECT2);
 
     public final BooleanPath revisit = createBoolean("revisit");

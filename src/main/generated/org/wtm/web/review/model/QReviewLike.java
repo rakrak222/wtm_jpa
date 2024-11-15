@@ -24,9 +24,7 @@ public class QReviewLike extends EntityPathBase<ReviewLike> {
 
     public final org.wtm.web.common.entity.QBaseTimeEntity _super = new org.wtm.web.common.entity.QBaseTimeEntity(this);
 
-    public final StringPath content = createString("content");
-
-    public final NumberPath<Long> Id = createNumber("Id", Long.class);
+    public final NumberPath<Long> id = createNumber("id", Long.class);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modDate = _super.modDate;
