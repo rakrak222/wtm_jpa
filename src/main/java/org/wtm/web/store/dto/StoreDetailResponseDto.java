@@ -1,7 +1,9 @@
 package org.wtm.web.store.dto;
 
+import jakarta.persistence.Embedded;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.wtm.web.auth.dto.Address;
 import org.wtm.web.ticket.dto.TicketDto;
 
 import java.util.List;
@@ -10,7 +12,9 @@ import java.util.List;
 @AllArgsConstructor
 public class StoreDetailResponseDto {
 
-    private String address;
+    @Embedded
+    private Address address;
+
     private String contact;
     private String operatingHours;
     private List<StoreSnsDto> storeSnsList;
