@@ -4,8 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.wtm.web.admin.dto.ticket.TicketDto;
-import org.wtm.web.admin.dto.ticket.TicketResponseDto;
+import org.wtm.web.admin.dto.ticket.*;
 import org.wtm.web.admin.service.AdminTicketService;
 
 import java.util.List;
@@ -68,4 +67,31 @@ public class AdminTicketController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
+    // 식권 사용 컨트롤러
+    @PostMapping("ticket/usage")
+    public ResponseEntity<?> createTicketUsage(
+            @RequestBody TicketUsageDto ticketUsageDto
+    ) {
+        try {
+           TicketHistoryResponseDto ticketHistoryResponseDto = adminTicketService.createTicketUsageHistory(ticketUsageDto);
+            return new ResponseEntity<>(ticketHistoryResponseDto, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    // 식권 발급 컨트롤러
+    @PostMapping("ticket/purchase")
+    public ResponseEntity<?> createTicketPurchase(
+            @RequestBody TicketPurchaseDto ticketPurchaseDto
+            ) {
+        try {
+            TicketHistoryResponseDto ticketHistoryResponseDto = adminTicketService.createTicketPurchaseHistory(ticketPurchaseDto);
+            return new ResponseEntity<>(ticketHistoryResponseDto, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }

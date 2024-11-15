@@ -1,7 +1,6 @@
 package org.wtm.web.admin.service;
 
-import org.wtm.web.admin.dto.ticket.TicketDto;
-import org.wtm.web.admin.dto.ticket.TicketResponseDto;
+import org.wtm.web.admin.dto.ticket.*;
 
 import java.util.List;
 
@@ -14,4 +13,8 @@ public interface AdminTicketService {
     public TicketResponseDto updateTicket(Long storeId, Long ticketId, TicketDto ticketDto);
 
     public void deleteTicket(Long storeId, Long ticketId);
+
+    public TicketHistoryResponseDto createTicketUsageHistory(TicketUsageDto ticketUsageDto);
+
+    public TicketHistoryResponseDto createTicketPurchaseHistory(TicketPurchaseDto ticketPurchaseDto);
 }

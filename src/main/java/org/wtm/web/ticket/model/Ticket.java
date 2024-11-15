@@ -36,4 +36,14 @@ public class Ticket extends BaseTimeEntity {
         this.price = price;
         return this;
     }
+
+    public Ticket updateName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public Ticket updateCategory(Long category) {
+        this.category = category;
+        return this;
+    }
 }
