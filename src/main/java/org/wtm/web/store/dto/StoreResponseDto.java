@@ -1,8 +1,10 @@
 package org.wtm.web.store.dto;
 
 
+import jakarta.persistence.Embedded;
 import lombok.Builder;
 import lombok.Data;
+import org.wtm.web.auth.dto.Address;
 import org.wtm.web.store.model.Store;
 import org.wtm.web.review.model.ReviewScore;
 
@@ -12,12 +14,14 @@ public class StoreResponseDto {
 
     private Long storeId;
     private String name;
-    private String address;
     private String operatingHours;
     private Long price;
     private Boolean isBookmarked;
     private String img;
     private Double rating;
+
+    @Embedded
+    private Address address;
 
 //    // Store 엔티티를 받아서 필요한 데이터로 변환
 //    public StoreResponseDto(Store store) {

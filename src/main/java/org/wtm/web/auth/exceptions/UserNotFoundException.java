@@ -1,4 +1,4 @@
-package org.wtm.web.user.exceptions;
+package org.wtm.web.auth.exceptions;
 
 public class UserNotFoundException extends RuntimeException{
 

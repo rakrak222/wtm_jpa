@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.wtm.web.auth.dto.Address;
 import org.wtm.web.common.entity.BaseTimeEntity;
 
 import java.util.Collections;
@@ -39,8 +40,8 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING) // EnumType.STRING으로 설정하여 문자열로 저장
     private UserRole role; // default 값 : ROLE_USER
 
-    @Column(length = 100)
-    private String address; // TODO : 내장 타입 사용은 추후 결정
+    @Embedded
+    private Address address; // 통합된 주소 정보
 
     @Column(length = 15)
     private String phone;
@@ -64,7 +65,7 @@ public class User extends BaseTimeEntity {
         this.name = name;
     }
 
-    public void updateAddress(String address) {
+    public void updateAddress(Address address) {
         this.address = address;
     }
 

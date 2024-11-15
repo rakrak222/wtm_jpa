@@ -1,4 +1,4 @@
-package org.wtm.web.user.exceptions;
+package org.wtm.web.auth.exceptions;
 
 public class DuplicateEmailException extends RuntimeException {
     public DuplicateEmailException() {

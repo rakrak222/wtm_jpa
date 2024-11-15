@@ -26,6 +26,7 @@ import org.wtm.web.user.model.User;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
   private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
   public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -57,7 +58,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
       User user = User.builder()
           .email(oAuth2Response.getEmail())
           .username(username)
-          .password("1111")
+          .password(passwordEncoder.encode("1111"))
           .name(oAuth2Response.getName())
           .role(UserRole.USER)
           .social(true)

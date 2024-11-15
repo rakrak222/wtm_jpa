@@ -19,19 +19,30 @@ public class KakaoResponse implements OAuth2Response{
 
   @Override
   public String getProviderId() {
-
-    return attribute.get("sub").toString();
+      // 최상위에 있는 "id" 값을 가져옵니다.
+      Object id = attribute.get("id");
+      return id != null ? id.toString() : null;
   }
 
   @Override
   public String getEmail() {
-
-    return attribute.get("email").toString();
+    // "kakao_account" 맵에서 "email" 값을 가져옵니다.
+    Map<String, Object> kakaoAccount = (Map<String, Object>) attribute.get("kakao_account");
+    if (kakaoAccount != null) {
+      Object email = kakaoAccount.get("email");
+      return email != null ? email.toString() : null;
+    }
+    return null;
   }
 
   @Override
   public String getName() {
-
-    return attribute.get("nickname").toString();
+    // "properties" 맵에서 "nickname" 값을 가져옵니다.
+    Map<String, Object> properties = (Map<String, Object>) attribute.get("properties");
+    if (properties != null) {
+      Object nickname = properties.get("nickname");
+      return nickname != null ? nickname.toString() : null;
+    }
+    return null;
   }
 }
