@@ -14,9 +14,7 @@ public class MenuListDto {
     private Long mealId;
     private Long userId;
     private Long categoryId;
-    private Long storeId;
     private String name;
-    private List<String> menuImg;
     private LocalDateTime menuRegDate;
     private LocalDateTime menuUpdateDate;
 }

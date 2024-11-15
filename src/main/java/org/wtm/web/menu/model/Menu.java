@@ -49,4 +49,12 @@ public class Menu extends BaseTimeEntity {
         this.regDate = LocalDateTime.now();
         this.modDate = LocalDateTime.now();
     }
+
+    public void updateName(String name) {
+        this.name = name;
+    }
+
+    public void updateCategory(MenuCategory category) {
+        this.category = category;
+    }
 }

@@ -1,9 +1,7 @@
 package org.wtm.web.admin.service;
 
-import org.wtm.web.admin.dto.notice.NoticeCreateDto;
-import org.wtm.web.admin.dto.notice.NoticeDto;
-import org.wtm.web.admin.dto.notice.NoticeListDto;
-import org.wtm.web.admin.dto.notice.NoticeUpdateDto;
+import org.springframework.data.domain.Pageable;
+import org.wtm.web.admin.dto.notice.*;
 import org.wtm.web.store.model.Notice;
 
 import java.util.List;
@@ -13,7 +11,7 @@ public interface AdminNoticeService {
     /**
      * 공지사항 조회
      */
-    public List<NoticeListDto> getNoticesByStoreId(Long storeId);
+    public NoticePageResponse getNoticesByStoreId(Long storeId, Pageable pageable);
 
     /**
      * 공지사항 등록

@@ -26,6 +26,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     List<Review> findAllByStoreId(Long storeId);
 
+    @Query("SELECT COUNT(r) FROM Review r WHERE r.store.id = :storeId")
+    int findReviewCountByStoreId(@Param("storeId") long storeId);
+
     // added by jwhuh 2024-11-04
     @Query("SELECT AVG(s.score)" +
             "FROM Review r " +
