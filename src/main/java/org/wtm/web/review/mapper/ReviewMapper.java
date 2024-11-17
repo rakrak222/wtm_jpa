@@ -9,6 +9,7 @@ import org.wtm.web.review.model.Review;
 import org.wtm.web.review.model.ReviewImg;
 import org.wtm.web.review.model.ReviewScore;
 import org.wtm.web.store.model.Store;
+import org.wtm.web.ticket.model.TicketHistoryUsage;
 import org.wtm.web.user.model.User;
 
 import java.util.List;
@@ -51,11 +52,12 @@ public class ReviewMapper {
                 .orElse(0.0);
     }
 
-    public Review toEntity(String reviewContent, boolean revisit, Store store, User user) {
+    public Review toEntity(String reviewContent, boolean revisit, Store store, TicketHistoryUsage ticketHistoryUsage, User user) {
         return Review.builder()
                 .content(reviewContent)
                 .revisit(revisit)
                 .store(store)
+                .ticketHistoryUsage(ticketHistoryUsage)
                 .user(user)
                 .build();
     }

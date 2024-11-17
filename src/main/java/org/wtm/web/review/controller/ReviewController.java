@@ -55,7 +55,7 @@ public class ReviewController {
             @RequestParam(value = "size", defaultValue = "10") int size) {
         try {
 
-            Long userId = 2L;
+            Long userId = 1L;
             Pageable pageable = PageRequest.of(page, size);
             Slice<ReviewListDto> reviews = reviewService.getReviewsByStoreId(storeId, sortOption, pageable, userId);
             return new ResponseEntity<>(reviews, HttpStatus.OK);
@@ -76,7 +76,7 @@ public class ReviewController {
             @RequestParam("reviewScoresDtos") String scoresJson,
             @RequestParam(value = "files", required = false) List<MultipartFile> files) {
 
-        Long userId = 2L; // 테스트를 위해 userId를 1로 고정
+        Long userId = 1L; // 테스트를 위해 userId를 1로 고정
 
         // JSON 문자열을 DTO로 변환
         ObjectMapper objectMapper = new ObjectMapper();
@@ -91,20 +91,20 @@ public class ReviewController {
         ReviewRequestDto reviewRequestDto = new ReviewRequestDto(revisit, reviewContent, scores);
 
         // 리뷰 서비스 호출
-        reviewService.addReview(storeId, reviewRequestDto, files, userId);
+        reviewService.addReview(storeId, ticketHistoryUsageId, reviewRequestDto, files, userId);
         return ResponseEntity.status(201).body(Map.of("message", "리뷰가 성공적으로 등록되었습니다."));
     }
 
     @PostMapping("{storeId}/reviews/{reviewId}/reviewLike")
     public ResponseEntity<?> addReviewLike(@PathVariable Long reviewId) {
-        Long FIXED_USER_ID = 2L;
+        Long FIXED_USER_ID = 1L;
         reviewService.addReviewLike(reviewId, FIXED_USER_ID);
         return ResponseEntity.ok("리뷰 Like가 활성화 되었습니다.");
     }
 
     @DeleteMapping("{storeId}/reviews/{reviewId}/reviewLike")
     public ResponseEntity<?> removeReviewLike(@PathVariable Long reviewId) {
-        Long FIXED_USER_ID = 2L;
+        Long FIXED_USER_ID = 1L;
         reviewService.removeReviewLike(reviewId, FIXED_USER_ID);
         return ResponseEntity.ok("리뷰 Like가 삭제 되었습니다.");
     }

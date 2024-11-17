@@ -11,7 +11,7 @@ public interface ReviewService {
 
     ReviewStatsDto getReviewStats(Long storeId);
 
-    void addReview(Long storeId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files, Long userId);
+    void addReview(Long storeId, Long ticketHistoryUsageId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files, Long userId);
 
 
     Slice<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption, Pageable pageable, Long UserId);

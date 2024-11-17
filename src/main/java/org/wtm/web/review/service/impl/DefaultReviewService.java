@@ -18,6 +18,7 @@ import org.wtm.web.review.mapper.ReviewStatsMapper;
 import org.wtm.web.review.model.*;
 import org.wtm.web.review.service.ReviewService;
 import org.wtm.web.store.model.Store;
+import org.wtm.web.ticket.model.TicketHistoryUsage;
 import org.wtm.web.user.model.User;
 
 import java.time.Duration;
@@ -44,6 +45,7 @@ public class DefaultReviewService implements ReviewService {
     private final ReviewLikeRepository reviewLikeRepository;
 
     private final ReviewRepositoryCustom reviewRepositoryCustom;
+    private final TicketHistoryUsageRepository ticketHistoryUsageRepository;
 
 
     @Value("${image.upload-review-dir}")
@@ -148,17 +150,20 @@ public class DefaultReviewService implements ReviewService {
 
     @Override
     @Transactional
-    public void addReview(Long storeId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files, Long userId) {
+    public void addReview(Long storeId, Long ticketHistoryUsageId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files, Long userId) {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 Store를 찾을 수 없습니다."));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 User를 찾을 수 없습니다: " + userId));
+        TicketHistoryUsage ticketHistoryUsage = ticketHistoryUsageRepository.findById(ticketHistoryUsageId)
+                .orElseThrow(() -> new RuntimeException("해당 ID의 TicketHistoryUsage를 찾을 수 없습니다."));
 
         // 리뷰 내용 및 재방문 여부 등록
         Review review = reviewMapper.toEntity(
                 reviewRequestDto.getReviewContent(),
                 reviewRequestDto.isRevisit(),
                 store,
+                ticketHistoryUsage,
                 user
         );
         review = reviewRepository.save(review);
