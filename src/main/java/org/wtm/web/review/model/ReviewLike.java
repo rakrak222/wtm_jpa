@@ -6,7 +6,14 @@ import org.wtm.web.common.entity.BaseTimeEntity;
 import org.wtm.web.user.model.User;
 
 @Entity
-@Table(name = "REVIEW_LIKE")
+@Table(
+        name = "REVIEW_LIKE",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        columnNames = {"user_id", "review_id"}
+                )
+        }
+)
 @Getter
 @Builder
 @ToString(exclude = {"user", "review"})
@@ -14,18 +21,17 @@ import org.wtm.web.user.model.User;
 @AllArgsConstructor
 public class ReviewLike extends BaseTimeEntity {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "review_like_id")
-    private Long Id;
-
-    @Column(nullable = false, length = 100)
-    private String content;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review_id")
+    @JoinColumn(name = "review_id", nullable = false)
     private Review review;
 }
+

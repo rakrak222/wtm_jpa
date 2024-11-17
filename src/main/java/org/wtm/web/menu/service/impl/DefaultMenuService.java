@@ -91,11 +91,11 @@ public class DefaultMenuService implements MenuService {
                 });
 
         // 카테고리 조회
-        MenuCategory mainCategory = menuCategoryRepository.findByName("Main Menu")
+        MenuCategory mainCategory = menuCategoryRepository.findByName("메인메뉴")
                 .orElseThrow(() -> new RuntimeException("Main Menu 카테고리를 찾을 수 없습니다."));
-        MenuCategory soupCategory = menuCategoryRepository.findByName("Soup Menu")
+        MenuCategory soupCategory = menuCategoryRepository.findByName("국메뉴")
                 .orElseThrow(() -> new RuntimeException("Soup Menu 카테고리를 찾을 수 없습니다."));
-        MenuCategory etcCategory = menuCategoryRepository.findByName("Etc Menu")
+        MenuCategory etcCategory = menuCategoryRepository.findByName("서브메뉴")
                 .orElseThrow(() -> new RuntimeException("Etc Menu 카테고리를 찾을 수 없습니다."));
 
 

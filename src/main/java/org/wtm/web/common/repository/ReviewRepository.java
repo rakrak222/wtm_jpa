@@ -14,11 +14,11 @@ import java.util.List;
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
 
-    @Query("SELECT COALESCE(AVG(rs.score),0) FROM ReviewScore rs WHERE rs.review.store.id = :storeId")
+    @Query("SELECT COALESCE(ROUND(AVG(rs.score), 1), 0) FROM ReviewScore rs WHERE rs.review.store.id = :storeId")
     Double findOverallAverageScoreByStoreId(@Param("storeId") Long storeId);
 
     // ReviewScale 별 평균 리뷰 점수
-    @Query("SELECT rs.reviewScale.name, COALESCE(AVG(rs.score), 0) " +
+    @Query("SELECT rs.reviewScale.name, COALESCE(ROUND(AVG(rs.score), 1), 0) " +
             "FROM ReviewScore rs WHERE rs.review.store.id = :storeId " +
             "GROUP BY rs.reviewScale.name")
     List<Object[]> findAverageScoreByReviewScaleAndStoreId(@Param("storeId") Long storeId);

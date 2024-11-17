@@ -39,4 +39,7 @@ public class Meal extends BaseTimeEntity {
   
     @OneToMany(mappedBy = "meal")
     private List<MenuImg> menuImg = new ArrayList<>();
+
+    @OneToMany(mappedBy = "meal", fetch = FetchType.LAZY)
+    private List<Menu> menus = new ArrayList<>();
 }

@@ -2,6 +2,8 @@ package org.wtm.web.review.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,14 +15,14 @@ import org.wtm.web.review.mapper.ReviewCountMapper;
 import org.wtm.web.review.mapper.ReviewMapper;
 import org.wtm.web.review.mapper.ReviewScoreMapper;
 import org.wtm.web.review.mapper.ReviewStatsMapper;
-import org.wtm.web.review.model.Review;
-import org.wtm.web.review.model.ReviewImg;
-import org.wtm.web.review.model.ReviewScale;
-import org.wtm.web.review.model.ReviewScore;
+import org.wtm.web.review.model.*;
 import org.wtm.web.review.service.ReviewService;
 import org.wtm.web.store.model.Store;
+import org.wtm.web.ticket.model.TicketHistoryUsage;
 import org.wtm.web.user.model.User;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -40,9 +42,13 @@ public class DefaultReviewService implements ReviewService {
     private final UserRepository userRepository;
     private final UploadService uploadService;
     private final ReviewImgRepository reviewImgRepository;
+    private final ReviewLikeRepository reviewLikeRepository;
+
+    private final ReviewRepositoryCustom reviewRepositoryCustom;
+    private final TicketHistoryUsageRepository ticketHistoryUsageRepository;
 
 
-    @Value("${image.upload-menu-dir}")
+    @Value("${image.upload-review-dir}")
     private String uploadDir;
 
     @Transactional
@@ -71,30 +77,93 @@ public class DefaultReviewService implements ReviewService {
         return ReviewCountMapper.toDto(reviewCount);
     }
 
-    /**
-     * 리뷰조회
-     */
-    @Transactional(readOnly = true)
-    public List<ReviewListDto> getReviewsByStoreId(Long storeId) {
-        List<Review> reviews = reviewRepository.findAllByStoreId(storeId);
-        return reviews.stream()
-                .map(reviewMapper::toReviewListDto)
-                .collect(Collectors.toList());
+    @Override
+    public void addReviewLike(Long reviewId, Long fixedUserId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 리뷰가 존재하지 않습니다."));
+
+        User user = userRepository.findById(fixedUserId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
+
+        ReviewLike reviewLike = ReviewLike.builder()
+                .review(review)
+                .user(user)
+                .build();
+
+        reviewLikeRepository.save(reviewLike);
     }
 
     @Override
+    public void removeReviewLike(Long reviewId, Long fixedUserId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 리뷰가 존재하지 않습니다."));
+
+        User user = userRepository.findById(fixedUserId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
+
+        ReviewLike reviewLike = reviewLikeRepository.findByUserAndReview(user, review)
+                .orElseThrow(() -> new IllegalArgumentException("리뷰 Like가 존재하지 않습니다."));
+
+                reviewLikeRepository.delete(reviewLike);
+
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public Slice<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption, Pageable pageable, Long userId) {
+        Slice<ReviewListDto> reviews = reviewRepositoryCustom.findAllByStoreIdWithSorting(storeId, sortOption, pageable, userId);
+
+        reviews.forEach(review -> {
+            // 리뷰의 relativeDate 계산
+            review.setRelativeDate(calculateRelativeDate(review.getReviewRegDate()));
+
+            // 댓글 리스트에 대해 relativeDate 계산
+            review.getReviewComments().forEach(comment -> {
+                comment.setRelativeDate(calculateRelativeDate(comment.getCommentRegDate()));
+            });
+        });
+
+        return reviews;
+    }
+
+    private String calculateRelativeDate(LocalDateTime date) {
+        LocalDateTime now = LocalDateTime.now();
+        Duration duration = Duration.between(date, now);
+
+        if (duration.toMinutes() < 60) {
+            return duration.toMinutes() + "분 전";
+        } else if (duration.toHours() < 24) {
+            return duration.toHours() + "시간 전";
+        } else if (duration.toDays() < 7) {
+            return duration.toDays() + "일 전";
+        } else if (duration.toDays() < 30) {
+            return "몇 주 전";
+        } else if (duration.toDays() < 365) {
+            return "몇 달 전";
+        } else {
+            return "1년 이상";
+        }
+    }
+
+
+
+    @Override
     @Transactional
-    public void addReview(Long storeId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files, Long userId) {
+    public void addReview(Long storeId, Long ticketHistoryUsageId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files, Long userId) {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 Store를 찾을 수 없습니다."));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 User를 찾을 수 없습니다: " + userId));
+        TicketHistoryUsage ticketHistoryUsage = ticketHistoryUsageRepository.findById(ticketHistoryUsageId)
+                .orElseThrow(() -> new RuntimeException("해당 ID의 TicketHistoryUsage를 찾을 수 없습니다."));
 
         // 리뷰 내용 및 재방문 여부 등록
         Review review = reviewMapper.toEntity(
                 reviewRequestDto.getReviewContent(),
                 reviewRequestDto.isRevisit(),
                 store,
+                ticketHistoryUsage,
                 user
         );
         review = reviewRepository.save(review);

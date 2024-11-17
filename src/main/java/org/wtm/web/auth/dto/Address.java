@@ -14,4 +14,10 @@ public class Address {
     private String detailAddress;
     private String extraAddress;
 
+
+    public String fullAddress() {
+        return String.format("%s",
+                address != null ? address : "No Address");
+    }
+
 }

@@ -5,11 +5,13 @@ import lombok.*;
 import org.wtm.web.auth.dto.Address;
 import org.wtm.web.bookmark.model.Bookmark;
 import org.wtm.web.common.entity.BaseTimeEntity;
+import org.wtm.web.menu.model.Meal;
 import org.wtm.web.review.model.Review;
 import org.wtm.web.ticket.model.Ticket;
 import org.wtm.web.user.model.User;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -59,4 +61,7 @@ public class Store extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "store")
     private List<StoreSns> storeSnsList; // StoreSns와의 관계
+
+    @OneToMany(mappedBy = "store")
+    private List<Meal> meals = new ArrayList<>();
 }

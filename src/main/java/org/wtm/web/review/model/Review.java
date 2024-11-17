@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.wtm.web.store.model.Store;
 import org.wtm.web.common.entity.BaseTimeEntity;
+import org.wtm.web.ticket.model.TicketHistoryUsage;
 import org.wtm.web.user.model.User;
 
 import java.util.List;
@@ -36,6 +37,7 @@ public class Review extends BaseTimeEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewComment> reviewComments;
 
@@ -44,4 +46,12 @@ public class Review extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewImg> reviewImgs;
+
+    @OneToOne
+    @JoinColumn(name = "ticket_history_usage_id", nullable = false, unique = true)
+    private TicketHistoryUsage ticketHistoryUsage;
+
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReviewLike> reviewLikes;
+
 }
