@@ -91,6 +91,33 @@ public class DefaultStoreService implements StoreService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public String getDirections(Long storeId, double userLatitude, double userLongitude) {
+        // 1. Store 정보 가져오기
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new RuntimeException("Store not found"));
+
+        // 2. 주소를 위도/경도로 변환
+        GeocodingService.Coordinates coordinates = geocodingService
+                .getCoordinates(store.getAddress())
+                .orElseThrow(() -> new RuntimeException("Failed to fetch coordinates for store address"));
+
+        // 3. 네이버 지도 길찾기 URL 생성 (대중교통 모드)
+        return String.format(
+                "http://map.naver.com/index.nhn\n" +
+                        "?slng=%s\n" +
+                        "&slat=%s\n" +
+                        "&stext=내위치" +
+                        "&elng=%s\n" +
+                        "&elat=%s\n" +
+                        "&etext=%s\n" +
+                        "&menu=route\n" +
+                        "&pathType=4", //대중교통 : 1, 도보 : 4
+                userLongitude, userLatitude, // 사용자 위치 (출발지)
+                coordinates.getLongitude(), coordinates.getLatitude(), store.getName() // 가게 위치 (목적지)
+        );
+    }
+
 
     @Override
     @Transactional

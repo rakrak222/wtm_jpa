@@ -21,4 +21,6 @@ public interface StoreService {
     StoreDetailResponseDto getStoreDetailsById(Long storeId);
 
     List<StoreAddressResponseDto> getStoresAddress();
+
+    String getDirections(Long storeId, double userLatitude, double userLongitude);
 }

@@ -91,4 +91,19 @@ public class StoreController {
         }
         return ResponseEntity.ok(response);
     }
+
+    // 경로 찾기
+    @GetMapping("/{storeId}/directions")
+    public ResponseEntity<?> getDirections(
+            @PathVariable Long storeId,
+            @RequestParam double userLatitude,
+            @RequestParam double userLongitude) {
+        try {
+            // 사용자 위치를 포함한 네이버 지도 URL 생성
+            String naverMapsUrl = storeService.getDirections(storeId, userLatitude, userLongitude);
+            return ResponseEntity.ok(naverMapsUrl);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
+    }
 }
