@@ -67,9 +67,10 @@ public class ReviewController {
 
 
 
-    @PostMapping("{storeId}/reviews")
+    @PostMapping("{storeId}/ticketHistoryUsage/{ticketHistoryUsageId}/reviews")
     public ResponseEntity<?> addReview(
             @PathVariable Long storeId,
+            @PathVariable Long ticketHistoryUsageId,
             @RequestParam("revisit") boolean revisit,
             @RequestParam("reviewContent") String reviewContent,
             @RequestParam("reviewScoresDtos") String scoresJson,

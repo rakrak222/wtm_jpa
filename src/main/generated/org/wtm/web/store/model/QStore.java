@@ -24,7 +24,7 @@ public class QStore extends EntityPathBase<Store> {
 
     public final org.wtm.web.common.entity.QBaseTimeEntity _super = new org.wtm.web.common.entity.QBaseTimeEntity(this);
 
-    public final StringPath address = createString("address");
+    public final org.wtm.web.auth.dto.QAddress address;
 
     public final ListPath<org.wtm.web.bookmark.model.Bookmark, org.wtm.web.bookmark.model.QBookmark> bookmarks = this.<org.wtm.web.bookmark.model.Bookmark, org.wtm.web.bookmark.model.QBookmark>createList("bookmarks", org.wtm.web.bookmark.model.Bookmark.class, org.wtm.web.bookmark.model.QBookmark.class, PathInits.DIRECT2);
 
@@ -74,7 +74,8 @@ public class QStore extends EntityPathBase<Store> {
 
     public QStore(Class<? extends Store> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.user = inits.isInitialized("user") ? new org.wtm.web.user.model.QUser(forProperty("user")) : null;
+        this.address = inits.isInitialized("address") ? new org.wtm.web.auth.dto.QAddress(forProperty("address")) : null;
+        this.user = inits.isInitialized("user") ? new org.wtm.web.user.model.QUser(forProperty("user"), inits.get("user")) : null;
     }
 
 }

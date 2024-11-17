@@ -4,11 +4,12 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.wtm.web.auth.dto.Address;
 import org.wtm.web.common.entity.BaseTimeEntity;
-import org.wtm.web.user.constants.UserRole;
 
 import java.util.Collections;
 import java.util.List;
+import org.wtm.web.user.constants.UserRole;
 
 @Entity
 @Table(name ="USER")
@@ -27,6 +28,8 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, length = 100, unique = true)
     private String email; // ID
 
+    private String username;
+
     @Column(nullable = false)
     private String password;
 
@@ -37,8 +40,8 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING) // EnumType.STRING으로 설정하여 문자열로 저장
     private UserRole role; // default 값 : ROLE_USER
 
-    @Column(length = 100)
-    private String address; // TODO : 내장 타입 사용은 추후 결정
+    @Embedded
+    private Address address; // 통합된 주소 정보
 
     @Column(length = 15)
     private String phone;
@@ -46,16 +49,23 @@ public class User extends BaseTimeEntity {
     @Column(name = "profile_picture")
     private String profilePicture;
 
+    @Column(name = "social")
+    private Boolean social;
+
     // UserRole을 GrantedAuthority로 변환하여 반환
     public List<GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(role.getRole()));
     }
+    public void updateRole(UserRole role) {
+        this.role = role;
+    }
+    public void updateEmail(String email){ this.email = email; }
 
     public void updateName(String name) {
         this.name = name;
     }
 
-    public void updateAddress(String address) {
+    public void updateAddress(Address address) {
         this.address = address;
     }
 
@@ -69,5 +79,9 @@ public class User extends BaseTimeEntity {
 
     public void updateProfilePicture(String profilePicture) {
         this.profilePicture = profilePicture;
+    }
+
+    public boolean isSocial() {
+        return this.social != null && this.social;
     }
 }

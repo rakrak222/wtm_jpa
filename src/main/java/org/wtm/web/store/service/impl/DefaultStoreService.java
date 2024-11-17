@@ -76,14 +76,14 @@ public class DefaultStoreService implements StoreService {
         // Entity를 DTO로 변환하며 Geocoding을 통해 위도와 경도 추가
         return stores.stream()
                 .map(store -> {
-                    Optional<GeocodingService.Coordinates> coordinatesOpt = geocodingService.getCoordinates(store.getAddress());
+                    Optional<GeocodingService.Coordinates> coordinatesOpt = geocodingService.getCoordinates(store.getAddress().fullAddress());
                     Double latitude = coordinatesOpt.map(GeocodingService.Coordinates::getLatitude).orElse(null);
                     Double longitude = coordinatesOpt.map(GeocodingService.Coordinates::getLongitude).orElse(null);
 
                     return StoreAddressResponseDto.builder()
                             .storeId((store.getId()))
                             .storeName(store.getName())
-                            .address(store.getAddress())
+                            .address(store.getAddress().fullAddress())
                             .latitude(latitude)
                             .longitude(longitude)
                             .build();
@@ -99,7 +99,7 @@ public class DefaultStoreService implements StoreService {
 
         // 2. 주소를 위도/경도로 변환
         GeocodingService.Coordinates coordinates = geocodingService
-                .getCoordinates(store.getAddress())
+                .getCoordinates(store.getAddress().fullAddress())
                 .orElseThrow(() -> new RuntimeException("Failed to fetch coordinates for store address"));
 
         // 3. 네이버 지도 길찾기 URL 생성 (대중교통 모드)

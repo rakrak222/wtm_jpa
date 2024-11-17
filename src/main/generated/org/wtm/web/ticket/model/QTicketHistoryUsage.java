@@ -60,7 +60,7 @@ public class QTicketHistoryUsage extends EntityPathBase<TicketHistoryUsage> {
         super(type, metadata, inits);
         this.review = inits.isInitialized("review") ? new org.wtm.web.review.model.QReview(forProperty("review"), inits.get("review")) : null;
         this.ticket = inits.isInitialized("ticket") ? new QTicket(forProperty("ticket"), inits.get("ticket")) : null;
-        this.user = inits.isInitialized("user") ? new org.wtm.web.user.model.QUser(forProperty("user")) : null;
+        this.user = inits.isInitialized("user") ? new org.wtm.web.user.model.QUser(forProperty("user"), inits.get("user")) : null;
     }
 
 }

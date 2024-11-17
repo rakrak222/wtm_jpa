@@ -57,7 +57,7 @@ public class QTicketHistorySell extends EntityPathBase<TicketHistorySell> {
     public QTicketHistorySell(Class<? extends TicketHistorySell> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.ticket = inits.isInitialized("ticket") ? new QTicket(forProperty("ticket"), inits.get("ticket")) : null;
-        this.user = inits.isInitialized("user") ? new org.wtm.web.user.model.QUser(forProperty("user")) : null;
+        this.user = inits.isInitialized("user") ? new org.wtm.web.user.model.QUser(forProperty("user"), inits.get("user")) : null;
     }
 
 }

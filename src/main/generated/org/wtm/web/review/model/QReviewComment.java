@@ -60,7 +60,7 @@ public class QReviewComment extends EntityPathBase<ReviewComment> {
         super(type, metadata, inits);
         this.review = inits.isInitialized("review") ? new QReview(forProperty("review"), inits.get("review")) : null;
         this.store = inits.isInitialized("store") ? new org.wtm.web.store.model.QStore(forProperty("store"), inits.get("store")) : null;
-        this.user = inits.isInitialized("user") ? new org.wtm.web.user.model.QUser(forProperty("user")) : null;
+        this.user = inits.isInitialized("user") ? new org.wtm.web.user.model.QUser(forProperty("user"), inits.get("user")) : null;
     }
 
 }

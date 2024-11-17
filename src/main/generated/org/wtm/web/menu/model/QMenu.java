@@ -63,7 +63,7 @@ public class QMenu extends EntityPathBase<Menu> {
         this.category = inits.isInitialized("category") ? new QMenuCategory(forProperty("category")) : null;
         this.meal = inits.isInitialized("meal") ? new QMeal(forProperty("meal"), inits.get("meal")) : null;
         this.store = inits.isInitialized("store") ? new org.wtm.web.store.model.QStore(forProperty("store"), inits.get("store")) : null;
-        this.user = inits.isInitialized("user") ? new org.wtm.web.user.model.QUser(forProperty("user")) : null;
+        this.user = inits.isInitialized("user") ? new org.wtm.web.user.model.QUser(forProperty("user"), inits.get("user")) : null;
     }
 
 }
