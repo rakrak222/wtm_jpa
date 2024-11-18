@@ -69,12 +69,14 @@ public class SecurityConfig {
 
         // 경로별 인가 설정
         http.authorizeHttpRequests((auth) -> auth
-            .requestMatchers("/",
-                "/api/v1/auth/user/signUp",
-                "/api/v1/auth/admin/signUp",
-                "/api/v1/auth/check-email").permitAll()
-            .requestMatchers(ApiPaths.ADMIN + "/**").hasRole("ADMIN")
-            .anyRequest().authenticated());
+                .anyRequest().permitAll());
+//            .requestMatchers("/",
+//                "/api/v1/auth/user/signUp",
+//                "/api/v1/auth/admin/signUp",
+//                "/api/v1/*",
+//                "/api/v1/auth/check-email").permitAll());
+//            .requestMatchers(ApiPaths.ADMIN + "/**").hasRole("ADMIN")
+//            .anyRequest().authenticated());
 
         // 일반 로그인용 LoginFilter 추가
         LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil);

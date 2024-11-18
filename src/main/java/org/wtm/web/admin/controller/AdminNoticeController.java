@@ -13,7 +13,7 @@ import org.wtm.web.store.model.Notice;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("api/v1/admin")
 @RequiredArgsConstructor
 public class AdminNoticeController {
 
