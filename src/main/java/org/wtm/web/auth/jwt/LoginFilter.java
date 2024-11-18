@@ -2,6 +2,7 @@ package org.wtm.web.auth.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -95,8 +96,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String token = jwtUtil.createJwt(username, role, 60*60*10L);
 
-        response.addHeader("Authorization", "Bearer " + token);
-        response.setContentType("application/json");
+        // JWT 토큰을 쿠키로 전달
+        Cookie cookie = new Cookie("Authorization", token);
+        cookie.setHttpOnly(true);
+//        cookie.setSecure(true); // HTTPS 환경에서만 전송
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 60 * 10); // 토큰 유효기간 설정 (초 단위)
+        response.addCookie(cookie);
 
         // JSON 응답 작성
         Map<String, String> body = new HashMap<>();
@@ -104,6 +110,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         body.put("username", username);
         body.put("role", role);
 
+        response.setContentType("application/json");
         response.getWriter().write(new ObjectMapper().writeValueAsString(body));
         response.getWriter().flush();
 

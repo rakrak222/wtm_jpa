@@ -71,7 +71,6 @@ public class JWTFilter extends OncePerRequestFilter {
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if ("Authorization".equals(cookie.getName())) {
-                    System.out.println("Token found in cookies");
                     return cookie.getValue();
                 }
             }
@@ -80,7 +79,6 @@ public class JWTFilter extends OncePerRequestFilter {
         // 2. 헤더에서 Bearer 토큰 가져오기
         String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            System.out.println("Token found in Authorization header");
             return authorizationHeader.substring(7); // "Bearer " 부분 제거
         }
 

@@ -17,11 +17,11 @@ import org.wtm.web.store.model.StoreSns;
 import org.wtm.web.store.service.StoreService;
 import org.wtm.web.ticket.model.Ticket;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.wtm.web.user.model.User;
 
 @Service
 @RequiredArgsConstructor
@@ -118,6 +118,10 @@ public class DefaultStoreService implements StoreService {
         );
     }
 
+    @Override
+    public Optional<Store> getStoreByUser(User user) {
+        return storeRepository.findStoreByUser(user);
+    }
 
     @Override
     @Transactional

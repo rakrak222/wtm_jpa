@@ -103,7 +103,7 @@ public class SecurityConfig {
 
         // 세션 정책: STATELESS
         http.sessionManagement((session) -> session
-//            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+//            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)); // OAuth2 로그인에는 session이 필요
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
     }
