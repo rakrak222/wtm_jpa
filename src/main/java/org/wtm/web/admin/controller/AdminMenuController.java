@@ -59,6 +59,7 @@ public class AdminMenuController {
             List<MenuCreateDto> menuCreateDtoList = adminMenuService.addMenus(storeId, mealCreateDto, menuCreateDtos);
             return new ResponseEntity<>(menuCreateDtoList, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }

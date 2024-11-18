@@ -65,9 +65,6 @@ public class AdminStoreController {
         }
     }
 
-
-
-
 }
 
 // 데이터

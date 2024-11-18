@@ -14,4 +14,5 @@ public class TicketHistoryResponseDto {
     private Long ticketQuantity;
     private Long ticketPrice;
     private String type;
+
 }
