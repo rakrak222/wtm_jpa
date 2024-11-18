@@ -12,6 +12,9 @@ public class StoreMapper {
                 .average()
                 .orElse(0.0);
 
+        // 소수 첫째 자리까지 반올림
+        rating = Math.round(rating * 10) / 10.0;
+
         return StoreResponseDto.builder()
                 .storeId(store.getId())
                 .name(store.getName())

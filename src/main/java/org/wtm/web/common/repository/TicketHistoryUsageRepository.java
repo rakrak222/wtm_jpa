@@ -11,8 +11,9 @@ import java.util.List;
 
 @Repository
 public interface TicketHistoryUsageRepository extends JpaRepository<TicketHistoryUsage, Long> {
-    @Query("SELECT COALESCE(SUM(thu.amount), 0) FROM TicketHistoryUsage thu WHERE thu.user.id = :userId")
-    int getTotalUsedAmountByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT COALESCE(SUM(thu.amount), 0) FROM TicketHistoryUsage thu WHERE thu.user.id = :userId AND thu.ticket.store.id = :storeId")
+    int getTotalUsedAmountByUserIdAndStoreId(@Param("userId") Long userId, @Param("storeId") Long storeId);
 
     // added by jwhuh 2024-11-04
     List<TicketHistoryUsage> findByUserId(Long id);

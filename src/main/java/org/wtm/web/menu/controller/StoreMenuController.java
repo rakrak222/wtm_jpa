@@ -6,8 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.wtm.web.menu.dto.MenuImgResponseDto;
 import org.wtm.web.menu.dto.MenuRequestDto;
 import org.wtm.web.menu.dto.MenuResponseDto;
+import org.wtm.web.menu.service.MealService;
 import org.wtm.web.menu.service.MenuService;
 
 import java.io.IOException;
@@ -19,6 +21,13 @@ import java.util.List;
 public class StoreMenuController {
 
     private final MenuService menuService;
+    private final MealService mealService;
+
+    @GetMapping("/{storeId}/menus/today-images")
+    public List<MenuImgResponseDto> getTodayMenuImages(@PathVariable Long storeId) {
+        return mealService.getTodayMenuImages(storeId);
+    }
+
 
     @GetMapping("/{storeId}/menus/today")
     public ResponseEntity<?> getTodayMenusByStoreId(@PathVariable Long storeId) {
