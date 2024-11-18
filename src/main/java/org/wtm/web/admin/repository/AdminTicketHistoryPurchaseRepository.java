@@ -5,8 +5,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.wtm.web.ticket.model.TicketHistoryPurchase;
 
+import java.util.List;
+
 public interface AdminTicketHistoryPurchaseRepository extends JpaRepository<TicketHistoryPurchase, Long> {
 
-    @Query("select sum(thp.amount) from TicketHistoryPurchase thp where thp.user.id =:userId")
-    Integer getPurchaseAmountByUserId(@Param("userId") Long userId);
+    @Query("SELECT thp FROM TicketHistoryPurchase thp WHERE thp.user.id = :userId ORDER BY thp.regDate ASC")
+    List<TicketHistoryPurchase> findByUserIdOrderByCreatedDateAsc(@Param("userId") Long userId);
+
 }
