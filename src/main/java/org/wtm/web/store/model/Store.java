@@ -41,10 +41,12 @@ public class Store extends BaseTimeEntity {
     @JoinColumn(name = "admin_id")
     private User user;
 
-    @Column(name = "open_time")
+    //초단위 제외
+    @Column(name = "open_time", columnDefinition = "TIME(0)")
     private LocalTime openTime;
 
-    @Column(name = "close_time")
+    //초단위 제외
+    @Column(name = "close_time", columnDefinition = "TIME(0)")
     private LocalTime closeTime;
 
     @Column

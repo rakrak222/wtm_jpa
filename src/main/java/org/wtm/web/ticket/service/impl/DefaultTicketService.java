@@ -26,8 +26,8 @@ public class DefaultTicketService implements TicketService {
                 .orElseThrow(() -> new RuntimeException("식당이 조회되지 않습니다."));
 
         // 구매한 식권 및 사용한 식권 개수를 계산
-        int totalPurchasedTickets = ticketHistoryPurchaseRepository.getTotalPurchasedAmountByUserIdAndStoreId(userId, storeId);
-        int totalUsedTickets = ticketHistoryUsageRepository.getTotalUsedAmountByUserIdAndStoreId(userId, storeId);
+        int totalPurchasedTickets = ticketHistoryPurchaseRepository.getTotalPurchasedAmountByUserId(userId);
+        int totalUsedTickets = ticketHistoryUsageRepository.getTotalUsedAmountByUserId(userId);
 
         // 남은 식권 개수 계산
         int remainingTickets = totalPurchasedTickets - totalUsedTickets;

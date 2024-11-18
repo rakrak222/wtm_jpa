@@ -39,5 +39,7 @@ public class AdminTIcketMapper {
 
     public void updateTicketFromDto (TicketDto ticketDto, Ticket ticket){
         ticket.updatePrice(ticketDto.getPrice());
+        ticket.updateName(ticketDto.getName());
+        ticket.updateCategory(ticketDto.getCategoryId());
     }
 }

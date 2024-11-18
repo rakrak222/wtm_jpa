@@ -1,6 +1,7 @@
 package org.wtm.web.admin.dto.ticket;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @Data

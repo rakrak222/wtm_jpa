@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/admin")
+@RequestMapping("api/v1/admin")
 public class AdminReviewController {
 
     private final AdminReviewService adminReviewService;
