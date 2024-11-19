@@ -6,6 +6,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -76,8 +77,16 @@ public class JWTFilter extends OncePerRequestFilter {
             if (user.isSocial()) {
                 // 소셜 로그인 사용자
                 log.info("User is a social login user.");
+
+                // 속성 초기화
+                Map<String, Object> attributes = Map.of(
+                    "username", user.getEmail(),
+                    "name", user.getName(),
+                    "role", user.getRole().getRole()
+                );
+
                 CustomOAuth2User customOAuth2User = new CustomOAuth2User(
-                    new UserDto(user.getEmail(), user.getName(), user.getRole().getRole()));
+                    new UserDto(user.getEmail(), user.getName(), user.getRole().getRole()), attributes);
                 authToken = new UsernamePasswordAuthenticationToken(
                     customOAuth2User, null, customOAuth2User.getAuthorities());
             } else {
