@@ -51,8 +51,6 @@ public class AdminStoreController {
             @RequestParam(value = "img", required = false) MultipartFile img
     ) {
         try {
-            System.out.println("Raw DTO: " + rawDto);// JSON 데이터 디버깅
-            System.out.println("Img: " + img);
             // JSON 문자열을 DTO로 변환
             ObjectMapper objectMapper = new ObjectMapper();
             StoreInfoUpdateDto dto = objectMapper.readValue(rawDto, StoreInfoUpdateDto.class);
