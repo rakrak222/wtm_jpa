@@ -61,7 +61,7 @@ public class SecurityConfig {
                 configuration.setAllowedMethods(
                     Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                 configuration.setAllowCredentials(true);
-                configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
+                configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type", "X-Username"));
                 configuration.setExposedHeaders(Arrays.asList("Authorization", "Set-Cookie"));
                 configuration.setMaxAge(3600L); // 캐시 유효 시간 1시간 설정
                 return configuration;
