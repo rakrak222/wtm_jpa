@@ -5,7 +5,7 @@ import org.wtm.web.store.model.Store;
 import org.wtm.web.review.model.ReviewScore;
 
 public class StoreMapper {
-    public static StoreResponseDto toDto(Store store) {
+    public static StoreResponseDto toDto(Store store, Long userId) {
         Double rating = store.getReviews().stream()
                 .flatMap(review -> review.getReviewScores().stream())
                 .mapToDouble(ReviewScore::getScore)
@@ -15,9 +15,7 @@ public class StoreMapper {
         // 소수 첫째 자리까지 반올림
         rating = Math.round(rating * 10) / 10.0;
 
-        // 하드코딩된 userId
-        Long userId = 1L;
-
+        // 북마크 여부 확인
         boolean isBookmarked = store.getBookmarks().stream()
                 .anyMatch(bookmark -> bookmark.getUser().getId().equals(userId));
 
@@ -33,3 +31,4 @@ public class StoreMapper {
                 .build();
     }
 }
+

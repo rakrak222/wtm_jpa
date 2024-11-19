@@ -52,12 +52,13 @@ public class ReviewController {
             @PathVariable Long storeId,
             @RequestParam(defaultValue = "date") String sortOption,
             @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size) {
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestHeader("x-username") String username) {
         try {
-
+            System.out.println("Received username: " + username);
             Long userId = 1L;
             Pageable pageable = PageRequest.of(page, size);
-            Slice<ReviewListDto> reviews = reviewService.getReviewsByStoreId(storeId, sortOption, pageable, userId);
+            Slice<ReviewListDto> reviews = reviewService.getReviewsByStoreId(storeId, sortOption, pageable, username);
             return new ResponseEntity<>(reviews, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -96,16 +97,17 @@ public class ReviewController {
     }
 
     @PostMapping("{storeId}/reviews/{reviewId}/reviewLike")
-    public ResponseEntity<?> addReviewLike(@PathVariable Long reviewId) {
+    public ResponseEntity<?> addReviewLike(@PathVariable Long reviewId, @RequestHeader("x-username") String username) {
         Long FIXED_USER_ID = 1L;
-        reviewService.addReviewLike(reviewId, FIXED_USER_ID);
+        System.out.println("username = " + username);
+        reviewService.addReviewLike(reviewId, username);
         return ResponseEntity.ok("리뷰 Like가 활성화 되었습니다.");
     }
 
     @DeleteMapping("{storeId}/reviews/{reviewId}/reviewLike")
-    public ResponseEntity<?> removeReviewLike(@PathVariable Long reviewId) {
+    public ResponseEntity<?> removeReviewLike(@PathVariable Long reviewId, @RequestHeader("x-username") String username) {
         Long FIXED_USER_ID = 1L;
-        reviewService.removeReviewLike(reviewId, FIXED_USER_ID);
+        reviewService.removeReviewLike(reviewId, username);
         return ResponseEntity.ok("리뷰 Like가 삭제 되었습니다.");
     }
 
