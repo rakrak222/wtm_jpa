@@ -47,3 +47,6 @@ application-test.yml
 
 ### Ignore uploads folder
 /uploads/
+
+### Ignore all QueryDsl generated files
+!**/src/main/generated
