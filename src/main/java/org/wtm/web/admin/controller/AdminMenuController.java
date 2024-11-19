@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("api/v1/admin")
 @RequiredArgsConstructor
 public class AdminMenuController {
     private final AdminMenuService adminMenuService;
@@ -59,6 +59,7 @@ public class AdminMenuController {
             List<MenuCreateDto> menuCreateDtoList = adminMenuService.addMenus(storeId, mealCreateDto, menuCreateDtos);
             return new ResponseEntity<>(menuCreateDtoList, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }

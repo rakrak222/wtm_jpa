@@ -12,9 +12,8 @@ import java.util.List;
 @Repository
 public interface TicketHistoryPurchaseRepository extends JpaRepository<TicketHistoryPurchase, Long> {
 
-    @Query("SELECT COALESCE(SUM(thp.amount), 0) FROM TicketHistoryPurchase thp WHERE thp.user.id = :userId AND thp.ticket.store.id = :storeId")
-    int getTotalPurchasedAmountByUserIdAndStoreId(@Param("userId") Long userId, @Param("storeId") Long storeId);
-
+    @Query("SELECT COALESCE(SUM(thp.amount), 0) FROM TicketHistoryPurchase thp WHERE thp.user.id = :userId")
+    int getTotalPurchasedAmountByUserId(@Param("userId") Long userId);
 
     // added by jwhuh 2024-11-04
     List<TicketHistoryPurchase> findByUserId(Long id);

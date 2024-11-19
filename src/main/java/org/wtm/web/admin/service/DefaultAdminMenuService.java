@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.wtm.web.admin.dto.menu.*;
 import org.wtm.web.admin.mapper.AdminMenuMapper;
 import org.wtm.web.admin.repository.*;
+import org.wtm.web.common.repository.MenuImgRepository;
 import org.wtm.web.common.service.FileUploadService;
 import org.wtm.web.menu.model.Meal;
 import org.wtm.web.menu.model.Menu;
@@ -33,6 +34,7 @@ public class DefaultAdminMenuService implements AdminMenuService{
     private final AdminStoreRepository storeRepository;
     private final AdminUserRepository userRepository;
     private final AdminMenuCategoryRepository categoryRepository;
+    private final MenuImgRepository menuImgRepository;
 
     @Value("${image.upload-menu-dir}")
     String uploadDir;
@@ -242,7 +244,10 @@ public class DefaultAdminMenuService implements AdminMenuService{
         // Meal과 연결된 다른 Menu가 있는지 확인
         Meal meal = menu.getMeal();
         List<Menu> remainingMenus = menuRepository.findAllByMeal(meal);
-        if (remainingMenus.isEmpty()) {
+        // Meal과 연결된 MenuImg가 있는지 확인
+        List<MenuImg> remainingMenuImgs = menuImgRepository.findByMealId(meal.getId());
+
+        if (remainingMenus.isEmpty()&& remainingMenuImgs.isEmpty()) {
             // 다른 Menu가 없으면 Meal 삭제
             mealRepository.delete(meal);
         }

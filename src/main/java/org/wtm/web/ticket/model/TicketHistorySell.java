@@ -28,5 +28,5 @@ public class TicketHistorySell extends BaseTimeEntity {
     private Ticket ticket;
 
     @Column(nullable = false)
-    private Integer amount;
+    private Long amount;
 }

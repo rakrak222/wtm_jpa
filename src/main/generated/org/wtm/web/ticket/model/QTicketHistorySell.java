@@ -24,7 +24,7 @@ public class QTicketHistorySell extends EntityPathBase<TicketHistorySell> {
 
     public final org.wtm.web.common.entity.QBaseTimeEntity _super = new org.wtm.web.common.entity.QBaseTimeEntity(this);
 
-    public final NumberPath<Integer> amount = createNumber("amount", Integer.class);
+    public final NumberPath<Long> amount = createNumber("amount", Long.class);
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 

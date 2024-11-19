@@ -31,6 +31,8 @@ public class QTicketHistoryUsage extends EntityPathBase<TicketHistoryUsage> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modDate = _super.modDate;
 
+    public final QTicketHistoryPurchase purchase;
+
     //inherited
     public final DateTimePath<java.time.LocalDateTime> regDate = _super.regDate;
 
@@ -58,6 +60,7 @@ public class QTicketHistoryUsage extends EntityPathBase<TicketHistoryUsage> {
 
     public QTicketHistoryUsage(Class<? extends TicketHistoryUsage> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
+        this.purchase = inits.isInitialized("purchase") ? new QTicketHistoryPurchase(forProperty("purchase"), inits.get("purchase")) : null;
         this.review = inits.isInitialized("review") ? new org.wtm.web.review.model.QReview(forProperty("review"), inits.get("review")) : null;
         this.ticket = inits.isInitialized("ticket") ? new QTicket(forProperty("ticket"), inits.get("ticket")) : null;
         this.user = inits.isInitialized("user") ? new org.wtm.web.user.model.QUser(forProperty("user"), inits.get("user")) : null;

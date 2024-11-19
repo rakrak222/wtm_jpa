@@ -15,6 +15,10 @@ import org.wtm.web.user.model.User;
 @AllArgsConstructor
 public class TicketHistoryUsage extends BaseTimeEntity {
 
+//    ALTER TABLE TicketHistoryUsage
+//    ADD COLUMN ticket_history_purchase_id BIGINT NOT NULL;
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ticket_history_usage_id")
@@ -33,4 +37,8 @@ public class TicketHistoryUsage extends BaseTimeEntity {
 
     @OneToOne(mappedBy = "ticketHistoryUsage", cascade = CascadeType.ALL, orphanRemoval = true)
     private Review review;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ticket_history_purchase_id", nullable = true)
+    private TicketHistoryPurchase purchase;
 }
