@@ -1,6 +1,7 @@
 package org.wtm.web.auth.service;
 
 import io.jsonwebtoken.security.Password;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,15 +35,16 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     OAuth2User oAuth2User = super.loadUser(userRequest);
 
     System.out.println(oAuth2User);
+    Map<String, Object> attributes = oAuth2User.getAttributes();
 
     String registrationId = userRequest.getClientRegistration().getRegistrationId();
     OAuth2Response oAuth2Response = null;
     if (registrationId.equals("naver")) {
-      oAuth2Response = new NaverResponse(oAuth2User.getAttributes());
+      oAuth2Response = new NaverResponse(attributes);
     } else if (registrationId.equals("google")) {
-      oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
+      oAuth2Response = new GoogleResponse(attributes);
     } else if (registrationId.equals("kakao")) {
-      oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
+      oAuth2Response = new KakaoResponse(attributes);
     } else {
       return null;
     }
@@ -52,6 +54,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     String email = oAuth2Response.getEmail();
 
     Optional<User> optionalUser = userRepository.findByEmail(email);
+    // 원시 속성 정보
+
 
     if(optionalUser.isEmpty()) {
 
@@ -67,11 +71,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
       userRepository.save(user);
 
       UserDto userDto = new UserDto();
-      userDto.setUsername(username);
+      userDto.setUsername(email);
       userDto.setName(oAuth2Response.getName());
       userDto.setRole(String.valueOf(UserRole.USER));
 
-      return new CustomOAuth2User(userDto);
+      return new CustomOAuth2User(userDto, attributes);
     } else {
 
       User user = optionalUser.get();
@@ -81,11 +85,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
       userRepository.save(user);
 
       UserDto userDto = new UserDto();
-      userDto.setUsername(user.getUsername());
+      userDto.setUsername(user.getEmail());
       userDto.setName(oAuth2Response.getName());
       userDto.setRole(String.valueOf(user.getRole()));
 
-      return new CustomOAuth2User(userDto);
+      return new CustomOAuth2User(userDto, attributes);
     }
   }
 }
