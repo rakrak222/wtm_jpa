@@ -11,6 +11,7 @@ public class MenuDto {
     private Long id;
     private String name;
     private Long categoryId;
+    private String categoryName;
     private LocalDate createdTime;
     private LocalDate updatedTime;
 
@@ -18,6 +19,7 @@ public class MenuDto {
         this.id = menu.getId();
         this.name = menu.getName();
         this.categoryId = menu.getCategory().getId();
+        this.categoryName = menu.getCategory().getName();
         this.createdTime = menu.getRegDate().toLocalDate();
         this.updatedTime = menu.getModDate().toLocalDate();
     }
