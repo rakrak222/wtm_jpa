@@ -10,6 +10,7 @@ import org.wtm.web.ticket.model.Ticket;
 
 import java.util.List;
 import java.util.Optional;
+import org.wtm.web.user.model.User;
 
 @Repository
 public interface StoreRepository extends JpaRepository<Store, Long>, StoreRepositoryCustom  {
@@ -35,4 +36,6 @@ public interface StoreRepository extends JpaRepository<Store, Long>, StoreReposi
 
     // added by jwhuh 2024-11-04
     List<Store> findByIdIn(List<Long> storeIds);
+
+    Optional<Store> findStoreByUser(User user);
 }

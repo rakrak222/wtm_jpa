@@ -1,5 +1,6 @@
 package org.wtm.web.auth.service.impl;
 
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -61,6 +62,16 @@ public class DefaultAuthService implements AuthService {
 
         userRepository.save(user);
         storeRepository.save(store);
+    }
+
+    @Override
+    public Optional<User> getUserByUsername(String username) {
+        return userRepository.findByEmail(username);
+    }
+
+    @Override
+    public Optional<Store> getStoreByUser(User user) {
+        return storeRepository.findStoreByUser(user);
     }
 
     @Override
