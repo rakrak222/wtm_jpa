@@ -10,6 +10,7 @@ import org.wtm.web.admin.dto.info.StoreInfoDto;
 import org.wtm.web.admin.dto.info.StoreInfoUpdateDto;
 import org.wtm.web.admin.mapper.AdminStoreMapper;
 import org.wtm.web.admin.repository.*;
+import org.wtm.web.auth.dto.Address;
 import org.wtm.web.common.service.FileUploadService;
 import org.wtm.web.store.model.Store;
 import org.wtm.web.store.model.StoreSns;
@@ -90,11 +91,14 @@ public class DefaultAdminStoreService implements AdminStoreService {
         // 3. StoreSns 정보 가져오기
         List<StoreSns> existingSnsList = storeSnsRepository.findByStoreId(storeId).orElse(List.of());
 
+        Address updatedAddress = updateDto.getStoreAddress();
+        Address existingAddress = store.getAddress();
+
         // 4. Update Logic using builder pattern
         Store updatedStore = Store.builder()
                 .id(store.getId()) // 기존 ID 유지
                 .name(updateDto.getStoreName() != null ? updateDto.getStoreName() : store.getName()) // 이름 업데이트
-                .address(updateDto.getStoreAddress() != null ? updateDto.getStoreAddress() : store.getAddress()) // 주소 업데이트
+                .address(updateDto.getStoreAddress() != null ? updatedAddress : existingAddress) // 주소 업데이트
                 .contact(updateDto.getPhone() != null ? updateDto.getPhone() : store.getContact()) // 연락처 업데이트
                 .openTime(updateDto.getOpenTime() != null ? updateDto.getOpenTime() : store.getOpenTime()) // 오픈 시간 업데이트
                 .closeTime(updateDto.getCloseTime() != null ? updateDto.getCloseTime() : store.getCloseTime()) // 종료 시간 업데이트

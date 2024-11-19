@@ -121,7 +121,7 @@ public class AuthController {
         if (authentication.getPrincipal() instanceof UserDetails userDetails) {
             return userDetails.getUsername();
         } else if (authentication.getPrincipal() instanceof OAuth2User oauth2User) {
-            return oauth2User.getAttribute("email");
+            return oauth2User.getAttribute("username");
         } else if (authentication.getPrincipal() instanceof User user) {
             return user.getEmail();
         }

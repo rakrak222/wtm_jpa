@@ -24,8 +24,6 @@ public class QReviewLike extends EntityPathBase<ReviewLike> {
 
     public final org.wtm.web.common.entity.QBaseTimeEntity _super = new org.wtm.web.common.entity.QBaseTimeEntity(this);
 
-    public final StringPath content = createString("content");
-
     public final NumberPath<Long> Id = createNumber("Id", Long.class);
 
     //inherited
