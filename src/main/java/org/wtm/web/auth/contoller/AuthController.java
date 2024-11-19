@@ -96,6 +96,7 @@ public class AuthController {
         Map<String, Object> body = new HashMap<>();
         body.put("username", user.getEmail());
         body.put("role", user.getRole().name());
+        body.put("userId", user.getId());
 
         if (user.getRole() == UserRole.ADMIN) {
             Optional<Store> storeOptional = authService.getStoreByUser(user);
