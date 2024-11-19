@@ -1,9 +1,7 @@
 package org.wtm.web.user.service.impl;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -19,8 +17,8 @@ import org.wtm.web.store.model.Store;
 import org.wtm.web.ticket.model.Ticket;
 import org.wtm.web.ticket.model.TicketHistoryPurchase;
 import org.wtm.web.ticket.model.TicketHistoryUsage;
-import org.wtm.web.user.dto.UserResponseDto;
-import org.wtm.web.user.dto.UserUpdateDto;
+import org.wtm.web.user.dto.user.UserResponseDto;
+import org.wtm.web.user.dto.user.UserUpdateDto;
 import org.wtm.web.user.dto.bookmark.BookmarkDto;
 import org.wtm.web.user.dto.review.UserReviewDto;
 import org.wtm.web.user.dto.ticket.*;
@@ -53,8 +51,8 @@ public class DefaultMyPageService implements MyPageService {
 
     private final PasswordEncoder passwordEncoder;
 
-    public UserResponseDto getMyPage(Long id) {
-        User user = userRepository.findUserById(id);
+    public UserResponseDto getMyPage(String username) {
+        User user = userRepository.findOneByEmail(username);
 
         return UserResponseDto.builder()
                 .email(user.getEmail())
@@ -63,8 +61,8 @@ public class DefaultMyPageService implements MyPageService {
                 .build();
     }
 
-    public UserResponseDto getMySettings(Long id) {
-        User user = userRepository.findUserById(id);
+    public UserResponseDto getMySettings(String username) {
+        User user = userRepository.findOneByEmail(username);
 
         return UserResponseDto.builder()
                 .email(user.getEmail())
@@ -102,7 +100,8 @@ public class DefaultMyPageService implements MyPageService {
         return false;
     }
 
-    public List<TicketSummaryDto> getTicketsOwnedByUser(Long userId) {
+    public List<TicketSummaryDto> getTicketsOwnedByUser(String username) {
+        Long userId = userRepository.findIdByEmail(username);
         // Step 1: 구입 티켓과 사용 티켓 조회
         List<TicketHistoryPurchase> purchasedTickets = ticketHistoryPurchaseRepository.findByUserId(userId);
         List<TicketHistoryUsage> usedTickets = ticketHistoryUsageRepository.findByUserId(userId);
@@ -182,7 +181,8 @@ public class DefaultMyPageService implements MyPageService {
         return ticketListInfo;
     }
 
-    public TicketHistoryResponseDto getMyTicketHistory(Long userId, int month, int year, int page, int size) {
+    public TicketHistoryResponseDto getMyTicketHistory(String username, int month, int year, int page, int size) {
+        Long userId = userRepository.findIdByEmail(username);
         // 시작일과 종료일 설정
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
@@ -261,7 +261,8 @@ public class DefaultMyPageService implements MyPageService {
                 .build();
     }
 
-    public TicketHistoryResponseDto getMyTicketHistoryByStore(Long userId, Long storeId, int month, int year) {
+    public TicketHistoryResponseDto getMyTicketHistoryByStore(String username, Long storeId, int month, int year) {
+        Long userId = userRepository.findIdByEmail(username);
         // 시작일과 종료일 설정
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
@@ -348,7 +349,8 @@ public class DefaultMyPageService implements MyPageService {
     }
 
 
-    public List<UserReviewDto> getMyReviews(Long userId) {
+    public List<UserReviewDto> getMyReviews(String username) {
+        Long userId = userRepository.findIdByEmail(username);
         //userId로 review와 해당하는 가게 정보 가져옴
         List<Review> reviews = reviewRepository.findByUserId(userId);
         if(!reviews.isEmpty()){
@@ -373,7 +375,8 @@ public class DefaultMyPageService implements MyPageService {
         return null;
     }
 
-    public List<BookmarkDto> getMyBookmarks(Long userId) {
+    public List<BookmarkDto> getMyBookmarks(String username) {
+        Long userId = userRepository.findIdByEmail(username);
         List<Bookmark> bookmarks = bookmarkRepository.findAllByUserId(userId);
 
         if(!bookmarks.isEmpty()) {
@@ -382,7 +385,11 @@ public class DefaultMyPageService implements MyPageService {
                     .map(bookmark -> {
                         Long storeId = bookmark.getStore().getId();
                         // storeId로 티켓 정보 조회
-                        Ticket ticket = ticketRepository.findOneByStoreId(storeId);
+                        List<Ticket> tickets = ticketRepository.findByStoreId(storeId, Sort.by(Sort.Direction.DESC, "price"));
+                        if (tickets.isEmpty()) {
+                            throw new IllegalArgumentException("No tickets found for the given storeId.");
+                        }
+                        Ticket ticket = tickets.get(0);
 
                         return BookmarkDto.builder()
                                 .storeId(storeId)
@@ -390,7 +397,6 @@ public class DefaultMyPageService implements MyPageService {
                                 .storeOpenTime(bookmark.getStore().getOpenTime())
                                 .storeCloseTime(bookmark.getStore().getCloseTime())
                                 .storeImgUrl(bookmark.getStore().getImg())
-                                .ticketId(ticket != null ? ticket.getId() : null)
                                 .ticketPrice(ticket != null ? ticket.getPrice() : 0)
                                 .reviewAverage(reviewRepository.calculateAvgByStoreId(storeId)) // @Query를 이용한 평균 점수 계산
                                 .isBookmarked(true)
@@ -402,7 +408,9 @@ public class DefaultMyPageService implements MyPageService {
     }
 
     @Transactional
-    public boolean deleteMyReview(Long reviewId, Long userId) {
+    public boolean deleteMyReview(Long reviewId, String username) {
+        Long userId = userRepository.findIdByEmail(username);
+
         Review review = reviewRepository.findByIdAndUserId(reviewId, userId)
                 .orElse(null);
         if(review!=null){
@@ -413,7 +421,9 @@ public class DefaultMyPageService implements MyPageService {
     }
 
     @Transactional
-    public boolean saveMyBookmark(Long storeId, Long userId) {
+    public boolean saveMyBookmark(Long storeId, String username) {
+        Long userId = userRepository.findIdByEmail(username);
+
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("Store not found with id: " + storeId));
         User user = userRepository.findById(userId)
@@ -434,7 +444,9 @@ public class DefaultMyPageService implements MyPageService {
     }
 
     @Transactional
-    public boolean deleteMyBookmark(Long storeId, Long userId) {
+    public boolean deleteMyBookmark(Long storeId, String username) {
+        Long userId = userRepository.findIdByEmail(username);
+
         Bookmark bookmark = bookmarkRepository.findByStoreIdAndUserId(storeId, userId)
                 .orElse(null);
 
@@ -445,20 +457,13 @@ public class DefaultMyPageService implements MyPageService {
         return false;
     }
 
-    public TicketDto getMyTicketDetail(Long storeId, Long userId) {
+    public TicketDto getMyTicketDetail(Long storeId, String username) {
+        Long userId = userRepository.findIdByEmail(username);
         // storeId로 관련된 모든 ticket 조회 (가격 내림차순 정렬)
         List<Ticket> tickets = ticketRepository.findByStoreId(storeId, Sort.by(Sort.Direction.DESC, "price"));
         if (tickets.isEmpty()) {
             throw new IllegalArgumentException("No tickets found for the given storeId.");
         }
-
-        // 모든 ticket이 동일한 storeId를 가지는지 검증
-        for (Ticket ticket : tickets) {
-            if (!ticket.getStore().getId().equals(storeId)) {
-                throw new IllegalStateException("All tickets must belong to the same store.");
-            }
-        }
-
         // ticket IDs 추출
         List<Long> ticketIds = tickets.stream()
                 .map(Ticket::getId)
@@ -479,6 +484,7 @@ public class DefaultMyPageService implements MyPageService {
 
         // DTO 생성 및 반환
         return TicketDto.builder()
+                .userId(userId)
                 .storeName(store.getName())
                 .storeId(store.getId())
                 .isBookmarked(isBookmarked)

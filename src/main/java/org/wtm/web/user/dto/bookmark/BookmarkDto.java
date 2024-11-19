@@ -13,7 +13,6 @@ public class BookmarkDto {
     private String storeName;
     private String storeImgUrl;
     private Long storeId;
-    private Long ticketId;
     private Long ticketPrice;
     private Double reviewAverage;
     private Boolean isBookmarked;

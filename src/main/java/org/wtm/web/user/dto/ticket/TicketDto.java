@@ -7,6 +7,7 @@ import lombok.Setter;
 @Getter
 @Builder
 public class TicketDto {
+    private Long userId;
     private Long ticketId;
     private Long storeId;
     private String storeName;
