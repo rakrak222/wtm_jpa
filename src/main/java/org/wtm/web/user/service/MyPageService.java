@@ -20,11 +20,8 @@ public interface MyPageService {
 
     List<TicketSummaryDto> getTicketsOwnedByUser(Long id);
 
-    boolean useMyTicket(TicketUsageDto ticketUsageDto);
-
-    boolean purchaseMyTicket(TicketPurchaseDto ticketPurchaseDto);
-
-    TicketHistoryResponseDto getMyTicketHistory(Long userId, int month, int year);
+    TicketHistoryResponseDto getMyTicketHistory(Long userId, int month, int year, int page, int size);
+//    TicketHistoryResponseDto getMyTicketHistory(Long userId, int month, int year);
 
     TicketHistoryResponseDto getMyTicketHistoryByStore(Long userId, Long storeId, int month, int year);
 
@@ -32,9 +29,11 @@ public interface MyPageService {
 
     List<BookmarkDto> getMyBookmarks(Long userId);
 
-    boolean deleteMyReview(Long reviewId);
+    boolean deleteMyReview(Long reviewId, Long userId);
 
     boolean saveMyBookmark(Long storeId, Long userId);
 
     boolean deleteMyBookmark(Long storeId, Long userId);
+
+    TicketDto getMyTicketDetail(Long storeId, Long userId);
 }

@@ -68,24 +68,17 @@ public class MyPageController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
         }
     }
-
-    // 티켓 사용 (나중엔 store_id만 남겨보자 ~)
-    @PostMapping("/tickets/stores")
-    public ResponseEntity<String> useMyTicket(@RequestBody TicketUsageDto ticketUsageDto) {
-        boolean result = myPageService.useMyTicket(ticketUsageDto);
-        if (result){
-            return ResponseEntity.ok().body("Succeed to use ticket"); // 200 OK와 함께 데이터 반환
+    // 티켓 상세 조회
+    @GetMapping("/tickets/stores")
+    public ResponseEntity<TicketDto> getMyTicketDetail(
+            @RequestParam("storeId") Long storeId,
+            @RequestParam("userId") Long userId
+    ) {
+        TicketDto ticketDto = myPageService.getMyTicketDetail(storeId, userId);
+        if (ticketDto!=null){
+            return ResponseEntity.ok().body(ticketDto); // 200 OK와 함께 데이터 반환
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
-    }
-
-    // 티켓 충전
-    @PostMapping("/tickets/stores/charge")
-    public ResponseEntity<String> purchaseMyTicket(@RequestBody TicketPurchaseDto ticketPurchaseDto) {
-        boolean result = myPageService.purchaseMyTicket(ticketPurchaseDto);
-        if (result){
-            return ResponseEntity.ok().body("Succeed to purchase ticket"); // 200 OK와 함께 데이터 반환
-        }
+        System.out.println("help");
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
     }
 
@@ -94,9 +87,12 @@ public class MyPageController {
     public ResponseEntity<TicketHistoryResponseDto> getMyTicketHistory(
             @RequestParam("userId") Long userId,
             @RequestParam("month") int month,
-            @RequestParam("year") int year) {
+            @RequestParam("year") int year,
+            @RequestParam("page") int page,
+            @RequestParam("size") int size
+    ) {
 
-        TicketHistoryResponseDto ticketHistoryResponseDto = myPageService.getMyTicketHistory(userId, month, year);
+        TicketHistoryResponseDto ticketHistoryResponseDto = myPageService.getMyTicketHistory(userId, month, year, page, size);
 
         if (ticketHistoryResponseDto != null){
             return ResponseEntity.ok(ticketHistoryResponseDto); // 200 OK와 함께 데이터 반환
@@ -129,8 +125,22 @@ public class MyPageController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
 
     }
-    //
-//    // 사용자 개인 북마크 조회
+
+    // 사용자가 본인 리뷰 삭제
+    @DeleteMapping("/reviews")
+    public ResponseEntity<String> deleteMyReview(
+            @RequestParam("reviewId") Long reviewId,
+            @RequestParam("userId") Long userId
+    ) {
+        boolean result = myPageService.deleteMyReview(reviewId, userId);
+
+        if (result) {
+            return ResponseEntity.ok().body("Successfully delete review"); // 200 OK와 함께 데이터 반환
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
+    }
+
+    // 사용자 개인 북마크 조회
     @GetMapping("/bookmarks")
     public ResponseEntity<List<BookmarkDto>> getMyBookmarks(@RequestParam("userId") Long userId) {
         List<BookmarkDto> bookmarkDto = myPageService.getMyBookmarks(userId);
@@ -166,16 +176,6 @@ public class MyPageController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
     }
 
-    //    // 사용자가 본인 리뷰 삭제
-    @DeleteMapping("/reviews")
-    public ResponseEntity<String> deleteMyReview(@RequestParam("reviewId") Long reviewId) {
-        boolean result = myPageService.deleteMyReview(reviewId);
-
-        if (result) {
-            return ResponseEntity.ok().body("Successfully delete review"); // 200 OK와 함께 데이터 반환
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
-    }
 
 }
 

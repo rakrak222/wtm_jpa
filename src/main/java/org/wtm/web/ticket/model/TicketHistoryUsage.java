@@ -3,6 +3,7 @@ package org.wtm.web.ticket.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.wtm.web.common.entity.BaseTimeEntity;
+import org.wtm.web.review.model.Review;
 import org.wtm.web.user.model.User;
 
 @Entity
@@ -29,4 +30,11 @@ public class TicketHistoryUsage extends BaseTimeEntity {
 
     @Column(nullable = false)
     private Long amount;
+
+    @OneToOne(mappedBy = "ticketHistoryUsage", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Review review;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ticket_history_purchase_id", nullable = true)
+    private TicketHistoryPurchase purchase;
 }

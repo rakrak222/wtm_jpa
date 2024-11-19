@@ -7,7 +7,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-
+import java.io.File;
 
 
 @Configuration
@@ -43,14 +43,14 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // Profile images
         registry.addResourceHandler("/uploads/users/**")
-                .addResourceLocations("file:" + baseUploadDir + "/" + uploadProfileDir + "/");
+                .addResourceLocations("file:" + baseUploadDir + File.separator + uploadProfileDir + File.separator);
 
         // Menu images
         registry.addResourceHandler("/uploads/menus/**")
-                .addResourceLocations("file:" + baseUploadDir + "/" + uploadMenuDir + "/");
+                .addResourceLocations("file:" + baseUploadDir + File.separator + uploadMenuDir + File.separator);
 
         // Review images
         registry.addResourceHandler("/uploads/reviews/**")
-                .addResourceLocations("file:" + baseUploadDir + "/" + uploadReviewDir + "/");
+                .addResourceLocations("file:" + baseUploadDir + File.separator + uploadReviewDir + File.separator);
     }
 }

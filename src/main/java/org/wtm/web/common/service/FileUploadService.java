@@ -48,8 +48,13 @@ public class FileUploadService implements UploadService{
             File dest = new File(filePath);
             file.transferTo(dest);
 
+            System.out.println(dateFolder +":datefolder" + newFileName +":newfilename" + uploadDir);
             // 브라우저 접근 가능한 URL 추가
-            return "/uploads/" + uploadDir + "/" + dateFolder + "/" + newFileName;
+//            return "http://localhost:8080/images/" + uploadDir + "/" + dateFolder.replace(File.separator, "/") + "/" + newFileName;
+
+            // 상대 경로만 반환 (예: "profile/2024/11/11/filename.jpg")
+            return "/uploads/" + uploadDir + "/" + dateFolder.replace("\\", "/") + "/" + newFileName;
+
 
         } catch (IOException e) {
             // 파일 업로드에 실패 시 작업 반환
