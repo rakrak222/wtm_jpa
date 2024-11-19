@@ -23,25 +23,19 @@ public interface TicketHistoryPurchaseRepository extends JpaRepository<TicketHis
     // added by jwhuh 2024-11-04
     List<TicketHistoryPurchase> findByUserId(Long id);
 
-//    @Query("select sum(thp.amount) from TicketHistoryPurchase thp where thp.user.id =:userId")
-//    Integer getPurchaseAmountByUserId(@Param("userId") Long userId);
-
-    @Query("select sum(thp.amount) from TicketHistoryPurchase thp where thp.user.id =:userId and thp.ticket.id =:ticketId")
-    Optional<Integer> getPurchaseAmountByUserIdAndTicketId(@Param("userId") Long userId, @Param("ticketId")Long ticketId);
-
     List<TicketHistoryPurchase> findByUserIdAndRegDateBetween(Long userId, LocalDateTime startDateTime, LocalDateTime endDateTime);
     // 필터 사용 시 고려
     Page<TicketHistoryPurchase> findByUserIdAndRegDateBetween(Long userId, LocalDateTime startDateTime, LocalDateTime endDateTime, Pageable pageable);
 
-    @Query("select sum(thp.amount) from TicketHistoryPurchase thp where thp.user.id =:userId and thp.id =:id")
-    Long countByTicketIdAndUserId(@Param("id")Long id, @Param("userId")Long userId);
-
-    @Query("select thp from TicketHistoryPurchase thp where thp.user.id =:userId ORDER BY thp.regDate ASC")
-    List<TicketHistoryPurchase> findAllByUserIdOrderByRegDateAsc(@Param("userId")Long userId);
-
-    @Query("SELECT thp FROM TicketHistoryPurchase thp WHERE thp.user.id = :userId AND thp.ticket.id IN :ticketIds ORDER BY thp.regDate ASC")
-    List<TicketHistoryPurchase> findAllByUserIdAndTicketIds(@Param("userId") Long userId, @Param("ticketIds") List<Long> ticketIds);
+//    @Query("select thp from TicketHistoryPurchase thp where thp.user.id =:userId ORDER BY thp.regDate ASC")
+//    List<TicketHistoryPurchase> findAllByUserIdOrderByRegDateAsc(@Param("userId")Long userId);
+//
+//    @Query("SELECT thp FROM TicketHistoryPurchase thp WHERE thp.user.id = :userId AND thp.ticket.id IN :ticketIds ORDER BY thp.regDate ASC")
+//    List<TicketHistoryPurchase> findAllByUserIdAndTicketIds(@Param("userId") Long userId, @Param("ticketIds") List<Long> ticketIds);
 
     @Query("SELECT SUM(thp.amount) FROM TicketHistoryPurchase thp WHERE thp.user.id = :userId")
     Optional<Long> getPurchaseAmountByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT SUM(thp.amount) FROM TicketHistoryPurchase thp WHERE thp.user.id = :userId AND thp.ticket.id IN :ticketIds")
+    Long countByTicketIdsAndUserId(@Param("ticketIds") List<Long> ticketIds, @Param("userId") Long userId);
 }

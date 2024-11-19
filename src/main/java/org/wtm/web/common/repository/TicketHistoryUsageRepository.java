@@ -33,4 +33,7 @@ public interface TicketHistoryUsageRepository extends JpaRepository<TicketHistor
             "FROM TicketHistoryUsage u " +
             "WHERE u.user.id = :userId AND u.ticket.id = :ticketId")
     Optional<Long> getUsageAmountByUserIdAndTicketId(@Param("userId") Long userId, @Param("ticketId") Long ticketId);
+
+    @Query("SELECT SUM(thu.amount) FROM TicketHistoryUsage thu WHERE thu.user.id = :userId AND thu.ticket.id IN :ticketIds")
+    Long countByTicketIdsAndUserId(@Param("ticketIds") List<Long> ticketIds, @Param("userId") Long userId);
 }

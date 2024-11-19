@@ -112,19 +112,18 @@ public class DefaultMyPageService implements MyPageService {
         // (1) 구입 티켓 수량을 ticketId로 그룹화하여 Map에 저장
         purchasedTickets.forEach(purchaseTicket -> {
             if (purchaseTicket.getTicket() != null && purchaseTicket.getTicket().getStore() != null) {
-            Long ticketId = purchaseTicket.getTicket().getId();
-            // 아래 코드는 ticketId로 된 key가 없을 시, 해당 데이터를 key로 그리고 value를 ticketSummaryDto 객체로 넣어주는 것
-            TicketSummaryDto ticketSummaryDto = ticketMap.computeIfAbsent(ticketId, k ->
-                    TicketSummaryDto.form(
-                            purchaseTicket.getTicket(),
-                            purchaseTicket.getTicket().getStore(),
-                            0L,
-                            0L,
-                            0L,
-                            0.0
-                            ));
-            ticketSummaryDto.addPurchasedTickets(purchaseTicket.getAmount());
-    }
+                Long ticketId = purchaseTicket.getTicket().getId();
+                TicketSummaryDto ticketSummaryDto = ticketMap.computeIfAbsent(ticketId, k ->
+                        TicketSummaryDto.form(
+                                purchaseTicket.getTicket(),
+                                purchaseTicket.getTicket().getStore(),
+                                0L,
+                                0L,
+                                0L,
+                                0.0
+                        ));
+                ticketSummaryDto.addPurchasedTickets(purchaseTicket.getAmount());
+            }
         });
 
         // (2) 사용 티켓 수량을 ticketId로 Map에 추가
@@ -136,12 +135,11 @@ public class DefaultMyPageService implements MyPageService {
             }
         });
 
-        // Step 2: 남은 티켓 수가 0보다 큰 티켓을 필터링하여 storeId 수집
-        List<Long> storeIds = new ArrayList<>();
-        //  values.stream이라서 ticketMap의 value인 ticketsummaryDto를 stream화 한다.
-        List<TicketSummaryDto> ticketListInfo = ticketMap.values().stream()
+        // Step 2: 남은 티켓 수가 0보다 큰 티켓의 storeId를 수집 (중복 제거)
+        List<Long> storeIds = ticketMap.values().stream()
                 .filter(ticketSummaryDto -> ticketSummaryDto.getTicketAmount() > 0)
-                .peek(ticketSummaryDto -> storeIds.add(ticketSummaryDto.getStoreId()))
+                .map(TicketSummaryDto::getStoreId)
+                .distinct() // 중복 제거
                 .collect(Collectors.toList());
 
         // Step 3: storeId에 해당하는 리뷰의 평균 점수를 계산
@@ -150,35 +148,36 @@ public class DefaultMyPageService implements MyPageService {
                         storeId -> storeId,
                         storeId -> {
                             Double avg = reviewRepository.calculateAvgByStoreId(storeId);
-                            if(avg != null){
-                                avg = Math.round(avg * 10) / 10.0;
-                            }else{
-                                avg = 0.0;
-                            }
-                            return avg;
-                        }
+                            return avg != null ? Math.round(avg * 10) / 10.0 : 0.0;
+                        },
+                        (existing, replacement) -> existing // 중복 처리: 기존 값 유지
                 ));
 
         // Step 4: store 정보 가져오기 및 최종 JSON 생성
         List<Store> stores = storeRepository.findByIdIn(storeIds);
         Map<Long, Store> storeMap = stores.stream()
                 .collect(Collectors.toMap(Store::getId, store -> store));
-        // step 5 : bookmark 데이터 조회도 추가
+
+        // Step 5: bookmark 데이터 조회
         Map<Long, Boolean> bookmarkMap = storeIds.stream()
                 .collect(Collectors.toMap(
                         storeId -> storeId,
                         storeId -> bookmarkRepository.findOneByStoreIdAndUserId(storeId, userId) != null
                 ));
 
-        ticketListInfo.forEach(ticketInfo -> {
-            Long storeId = ticketInfo.getStoreId();
+        List<TicketSummaryDto> ticketListInfo = ticketMap.values().stream()
+                .filter(ticketSummaryDto -> ticketSummaryDto.getTicketAmount() > 0)
+                .peek(ticketInfo -> {
+                    Long storeId = ticketInfo.getStoreId();
 
-            Double reviewAverage = reviewAvgMap.get(storeId);
-            ticketInfo.addReviewAverage(reviewAverage);
+                    // 리뷰 평균 점수와 북마크 상태 추가
+                    Double reviewAverage = reviewAvgMap.get(storeId);
+                    ticketInfo.addReviewAverage(reviewAverage);
 
-            boolean isBookmarked = bookmarkMap.getOrDefault(storeId, false);
-            ticketInfo.checkBookmark(isBookmarked);
-        });
+                    boolean isBookmarked = bookmarkMap.getOrDefault(storeId, false);
+                    ticketInfo.checkBookmark(isBookmarked);
+                })
+                .collect(Collectors.toList());
 
         return ticketListInfo;
     }
@@ -447,21 +446,41 @@ public class DefaultMyPageService implements MyPageService {
     }
 
     public TicketDto getMyTicketDetail(Long storeId, Long userId) {
-        Ticket ticket = ticketRepository.findOneByStoreId(storeId, Sort.by(Sort.Direction.DESC, "price"))
-                .orElseThrow(()-> new EntityNotFoundException("ticket이 없어요잉 ~"));
-        Bookmark bookmark = bookmarkRepository.findOneByStoreIdAndUserId(storeId, userId);
+        // storeId로 관련된 모든 ticket 조회 (가격 내림차순 정렬)
+        List<Ticket> tickets = ticketRepository.findByStoreId(storeId, Sort.by(Sort.Direction.DESC, "price"));
+        if (tickets.isEmpty()) {
+            throw new IllegalArgumentException("No tickets found for the given storeId.");
+        }
 
-        Long purchaseAmount = ticketHistoryPurchaseRepository.countByTicketIdAndUserId(ticket.getId(), userId);
-        Long usageAmount = ticketHistoryUsageRepository.countByTicketIdAndUserId(ticket.getId(), userId);
+        // 모든 ticket이 동일한 storeId를 가지는지 검증
+        for (Ticket ticket : tickets) {
+            if (!ticket.getStore().getId().equals(storeId)) {
+                throw new IllegalStateException("All tickets must belong to the same store.");
+            }
+        }
+
+        // ticket IDs 추출
+        List<Long> ticketIds = tickets.stream()
+                .map(Ticket::getId)
+                .toList();
+
+        // 구매 및 사용 기록 계산
+        Long purchaseAmount = ticketHistoryPurchaseRepository.countByTicketIdsAndUserId(ticketIds, userId);
+        Long usageAmount = ticketHistoryUsageRepository.countByTicketIdsAndUserId(ticketIds, userId);
 
         long totalAmount = (purchaseAmount != null ? purchaseAmount : 0L) - (usageAmount != null ? usageAmount : 0L);
 
+        // Bookmark 여부 확인
+        Bookmark bookmark = bookmarkRepository.findOneByStoreIdAndUserId(storeId, userId);
         boolean isBookmarked = bookmark != null;
 
+        // 첫 번째 ticket의 store 정보 사용
+        Store store = tickets.get(0).getStore();
+
+        // DTO 생성 및 반환
         return TicketDto.builder()
-                .ticketId(ticket.getId())
-                .storeName(ticket.getStore().getName())
-                .storeId(ticket.getStore().getId())
+                .storeName(store.getName())
+                .storeId(store.getId())
                 .isBookmarked(isBookmarked)
                 .ticketAmount(totalAmount)
                 .build();
