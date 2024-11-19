@@ -22,6 +22,7 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
 
     Optional<Bookmark> findByStoreIdAndUserId(Long storeId, Long userId);
 
+
     void deleteByStoreIdAndUserId(Long storeId, Long userId);
 
     boolean existsByStoreIdAndUserId(Long storeId, Long userId);

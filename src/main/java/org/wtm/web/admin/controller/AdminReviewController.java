@@ -1,34 +1,39 @@
 package org.wtm.web.admin.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.wtm.web.admin.dto.review.ReviewCommentCreateDto;
-import org.wtm.web.admin.dto.review.ReviewCommentResponseDto;
-import org.wtm.web.admin.dto.review.ReviewCommentUpdateDto;
-import org.wtm.web.admin.dto.review.ReviewListDto;
+import org.wtm.web.admin.dto.review.*;
 import org.wtm.web.admin.service.AdminReviewService;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/admin")
+@RequestMapping("api/v1/admin")
 public class AdminReviewController {
 
     private final AdminReviewService adminReviewService;
 
     @GetMapping("/stores/{storeId}/reviews")
-    public ResponseEntity<List<ReviewListDto>> getReviews(@PathVariable Long storeId){
+    public ResponseEntity<ReviewPageResponse> getReviews(@PathVariable Long storeId,
+                                                         @RequestParam(defaultValue = "0") int page,
+                                                         @RequestParam(defaultValue = "5") int size
+                                                          ){
         try {
-            List<ReviewListDto> reviews = adminReviewService.getReviewsByStoreId(storeId);
-            return new ResponseEntity<>(reviews, HttpStatus.OK);
+            Pageable pageable = PageRequest.of(page, size);
+            ReviewPageResponse response = adminReviewService.getReviewsByStoreId(storeId, pageable);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
     }
+
 
     @PostMapping("/stores/{storeId}/reviews/{reviewId}")
     public ResponseEntity<?> createReviewComment(

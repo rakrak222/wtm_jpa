@@ -7,6 +7,8 @@ import org.wtm.web.menu.model.Menu;
 import org.wtm.web.menu.model.MenuImg;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface AdminMenuService {
@@ -14,20 +16,46 @@ public interface AdminMenuService {
     /**
      * 메뉴 조회
      */
-    public List<MenuListDto> getMenusByStoreId(Long storeId);
+    public List<MenuListDto> getMenusByStoreIdAndDate(Long storeId, LocalDateTime date);
+
+
+    /**
+     * 메뉴 이미지 조회
+     */
+    public List<MenuImgDto> getMenusImgByStoreIdAndDate(Long storeId, LocalDateTime date);
 
     /**
      * 메뉴 등록
      */
-    public MenuResponseDto addMenu(Long storeId, MenuRequestDto menuRequestDto, List<MultipartFile> imgs) throws IOException;
+    public List<MenuCreateDto> addMenus(
+            Long storeId,
+            MealCreateDto mealCreateDto,
+            List<MenuCreateDto> menuCreateDtos
+    );
+
+    /**
+     * 메뉴 이미지 등록
+     */
+    public MenuImgResponseDto addMenuPictures (
+            Long storeId,
+            MealCreateDto mealCreateDto,
+            List<MultipartFile> imgs
+    );
 
     /**
      * 메뉴 수정
      */
-    public MenuResponseDto updateMenu(Long storeId, Long menuId, MenuRequestDto menuRequestDto, List<MultipartFile> imgs) throws IOException;
+    public MenuResponseDto updateMenu(Long storeId, Long menuId,
+                                      MealCreateDto mealCreateDto,
+                                      MenuCreateDto menuCreateDto);
+
+        /**
+         * 메뉴 삭제
+         */
+    public void deleteMenu(Long storeId, Long menuId);
 
     /**
-     * 메뉴 삭제
+     * 메뉴 이미지 삭제
      */
-    public void deleteMenu(Long storeId, Long menuId);
+    public MenuResponseDto deleteMenuImg (Long storeId, Long menuImgId);
 }

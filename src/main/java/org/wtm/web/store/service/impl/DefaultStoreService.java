@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wtm.web.common.repository.StoreRepository;
+import org.wtm.web.common.service.GeocodingService;
+import org.wtm.web.store.dto.StoreAddressResponseDto;
 import org.wtm.web.store.dto.StoreDetailResponseDto;
 import org.wtm.web.store.dto.StoreResponseDto;
 import org.wtm.web.store.dto.StoreReviewStatsDto;
@@ -15,6 +17,8 @@ import org.wtm.web.store.model.StoreSns;
 import org.wtm.web.store.service.StoreService;
 import org.wtm.web.ticket.model.Ticket;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,8 +29,11 @@ public class DefaultStoreService implements StoreService {
 
     private final StoreRepository storeRepository;
     private final StoreDetailMapper storeDetailMapper;
+    private final GeocodingService geocodingService;
 
 
+
+    // 모든 가게 조회(검색기능 없는 버전)
     @Override
     @Transactional
     public List<StoreResponseDto> getAllStores() {        // 1. StoreRepository에서 fetch join을 통해 데이터를 가져옴
@@ -40,6 +47,77 @@ public class DefaultStoreService implements StoreService {
         // 3. 결과 반환
         return result;
     }
+
+
+    // 가게 조회(검색 기능 포함 - 이름 및 오늘의 메뉴)
+    @Override
+    @Transactional
+    public List<StoreResponseDto> getStores(String query){
+
+        List<Store> stores;
+
+        if(query != null && !query.isEmpty()) {
+            stores = storeRepository.searchStoresByNameOrTodayMenu(query);
+        } else {
+            stores = storeRepository.findAllWithDetails();
+        }
+
+        List<StoreResponseDto> result = stores.stream()
+                .map(StoreMapper::toDto)
+                .collect(Collectors.toList());
+
+        return result;
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public List<StoreAddressResponseDto> getStoresAddress() {
+        List<Store> stores = storeRepository.findAllWithDetails();
+
+        // Entity를 DTO로 변환하며 Geocoding을 통해 위도와 경도 추가
+        return stores.stream()
+                .map(store -> {
+                    Optional<GeocodingService.Coordinates> coordinatesOpt = geocodingService.getCoordinates(store.getAddress().fullAddress());
+                    Double latitude = coordinatesOpt.map(GeocodingService.Coordinates::getLatitude).orElse(null);
+                    Double longitude = coordinatesOpt.map(GeocodingService.Coordinates::getLongitude).orElse(null);
+
+                    return StoreAddressResponseDto.builder()
+                            .storeId((store.getId()))
+                            .storeName(store.getName())
+                            .address(store.getAddress().fullAddress())
+                            .latitude(latitude)
+                            .longitude(longitude)
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public String getDirections(Long storeId, double userLatitude, double userLongitude) {
+        // 1. Store 정보 가져오기
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new RuntimeException("Store not found"));
+
+        // 2. 주소를 위도/경도로 변환
+        GeocodingService.Coordinates coordinates = geocodingService
+                .getCoordinates(store.getAddress().fullAddress())
+                .orElseThrow(() -> new RuntimeException("Failed to fetch coordinates for store address"));
+
+        // 3. 네이버 지도 길찾기 URL 생성 (대중교통 모드)
+        return String.format(
+                "http://map.naver.com/index.nhn\n" +
+                        "?slng=%s\n" +
+                        "&slat=%s\n" +
+                        "&stext=내위치" +
+                        "&elng=%s\n" +
+                        "&elat=%s\n" +
+                        "&etext=%s\n" +
+                        "&menu=route\n" +
+                        "&pathType=4", //대중교통 : 1, 도보 : 4
+                userLongitude, userLatitude, // 사용자 위치 (출발지)
+                coordinates.getLongitude(), coordinates.getLatitude(), store.getName() // 가게 위치 (목적지)
+        );
+    }
+
 
     @Override
     @Transactional
@@ -58,12 +136,26 @@ public class DefaultStoreService implements StoreService {
         return storeDetailMapper.toDto(store, storeSnsList, ticketList);
     }
 
+
+
+    @Override
+    @Transactional
     public StoreReviewStatsDto getStoreReviewStats(Long storeId) {
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new IllegalArgumentException("가게를 찾을수 없습니다."));
-        Object[] stats = storeRepository.findReviewStateByStoreId(storeId);
-        Long reviewCount = (Long) stats[0];
-        Double averageReviewScore = (Double) stats[1];
+                .orElseThrow(() -> new IllegalArgumentException("가게를 찾을 수 없습니다."));
+
+        // 쿼리 결과를 List<Object[]>로 받기
+        List<Object[]> statsList = storeRepository.findReviewStateByStoreId(storeId);
+
+        // statsList가 비어있는지 확인하고 첫 번째 항목 가져오기
+        Object[] stats = (statsList != null && !statsList.isEmpty()) ? statsList.get(0) : new Object[]{0, 0.0};
+
+        // 디버깅을 위한 출력
+        System.out.println("stats = " + Arrays.toString(stats));
+
+        // 배열의 길이를 확인하여 값이 없을 때 기본값 설정
+        Long reviewCount = (stats.length > 0 && stats[0] instanceof Number) ? ((Number) stats[0]).longValue() : 0L;
+        Double averageReviewScore = (stats.length > 1 && stats[1] instanceof Number) ? ((Number) stats[1]).doubleValue() : 0.0;
 
         return StoreReviewStatsMapper.toDto(store, reviewCount, averageReviewScore);
     }

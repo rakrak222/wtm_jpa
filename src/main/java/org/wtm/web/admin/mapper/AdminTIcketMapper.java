@@ -13,7 +13,9 @@ public class AdminTIcketMapper {
         return new TicketDto(
                 ticket.getId(),
                 ticket.getStore().getId(),
-                ticket.getPrice()
+                ticket.getPrice(),
+                ticket.getName(),
+                ticket.getCategory()
         );
     }
 
@@ -21,17 +23,23 @@ public class AdminTIcketMapper {
         return Ticket.builder()
                 .store(store)
                 .price(ticketDto.getPrice())
+                .name(ticketDto.getName())
+                .category(ticketDto.getCategoryId())
                 .build();
     }
 
     public TicketResponseDto toTicketResponseDto(Ticket ticket){
         return new TicketResponseDto(
                 ticket.getId(),
-                ticket.getPrice()
+                ticket.getPrice(),
+                ticket.getName(),
+                ticket.getCategory()
         );
     }
 
     public void updateTicketFromDto (TicketDto ticketDto, Ticket ticket){
         ticket.updatePrice(ticketDto.getPrice());
+        ticket.updateName(ticketDto.getName());
+        ticket.updateCategory(ticketDto.getCategoryId());
     }
 }

@@ -1,5 +1,7 @@
 package org.wtm.web.admin.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.wtm.web.store.model.Notice;
@@ -13,7 +15,7 @@ public interface AdminNoticeRepository extends JpaRepository<Notice, Long> {
 //    List<Notice> findNoticesWithUserByStoreId(@Param("storeId") Long storeId);
 
     @EntityGraph(attributePaths = {"store", "user"})
-    List<Notice> findNoticesWithUserByStoreId(Long storeId);
+    Page<Notice> findNoticesWithUserByStoreId(Long storeId, Pageable pageable);
 
     Optional<Notice> findNoticeByStoreIdAndId(Long storeId, Long noticeId);
 }

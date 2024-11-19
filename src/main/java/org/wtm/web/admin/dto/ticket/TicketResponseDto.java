@@ -1,6 +1,7 @@
 package org.wtm.web.admin.dto.ticket;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
@@ -8,4 +9,6 @@ import lombok.Data;
 public class TicketResponseDto {
     private Long id;
     private Long price;
+    private String name;
+    private Long categoryId;
 }

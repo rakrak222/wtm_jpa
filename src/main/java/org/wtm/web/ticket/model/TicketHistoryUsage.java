@@ -15,6 +15,10 @@ import org.wtm.web.user.model.User;
 @AllArgsConstructor
 public class TicketHistoryUsage extends BaseTimeEntity {
 
+//    ALTER TABLE TicketHistoryUsage
+//    ADD COLUMN ticket_history_purchase_id BIGINT NOT NULL;
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ticket_history_usage_id")

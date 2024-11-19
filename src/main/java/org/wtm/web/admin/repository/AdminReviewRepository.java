@@ -1,5 +1,7 @@
 package org.wtm.web.admin.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.wtm.web.review.model.Review;
 
@@ -11,6 +13,6 @@ public interface AdminReviewRepository extends JpaRepository<Review, Long> {
 //    List<Review> findAllByStoreId(Long storeId);
 
 //    v1: 성능 신경 안쓴 기본 jpa n+1 문제 발생함.
-    List<Review> findAllByStoreId(Long storeId);
+    Page<Review> findAllByStoreId(Long storeId, Pageable pageable);
 
 }

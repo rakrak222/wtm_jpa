@@ -18,7 +18,7 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("api/v1/admin")
 @AllArgsConstructor
 public class AdminStoreController {
 
@@ -64,9 +64,6 @@ public class AdminStoreController {
             return new ResponseEntity<>("Unexpected Error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-
-
 
 }
 

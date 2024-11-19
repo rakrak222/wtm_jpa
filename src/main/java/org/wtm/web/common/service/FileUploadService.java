@@ -48,13 +48,8 @@ public class FileUploadService implements UploadService{
             File dest = new File(filePath);
             file.transferTo(dest);
 
-            System.out.println(dateFolder +":datefolder" + newFileName +":newfilename" + uploadDir);
             // 브라우저 접근 가능한 URL 추가
-//            return "http://localhost:8080/images/" + uploadDir + "/" + dateFolder.replace(File.separator, "/") + "/" + newFileName;
-
-            // 상대 경로만 반환 (예: "profile/2024/11/11/filename.jpg")
-            return "/uploads/" + uploadDir + "/" + dateFolder.replace("\\", "/") + "/" + newFileName;
-
+            return "/uploads/" + uploadDir + File.separator + dateFolder + File.separator+ newFileName;
 
         } catch (IOException e) {
             // 파일 업로드에 실패 시 작업 반환
@@ -82,7 +77,6 @@ public class FileUploadService implements UploadService{
                   filePaths.add(null);
               }else {
                   try {
-
                       String uuid = UUID.randomUUID().toString();
                       String originalFileExtension = getFileExtension(file.getOriginalFilename());
                       String newFileName = uuid + originalFileExtension;
@@ -93,7 +87,7 @@ public class FileUploadService implements UploadService{
                       file.transferTo(dest);
 
                       // 브라우저 접근 가능한 URL 추가
-                      filePaths.add("/uploads/" + uploadDirType + "/" + dateFolder + "/" + newFileName);
+                      filePaths.add("/uploads/" + uploadDirType + File.separator + dateFolder + File.separator + newFileName);
                   } catch (IOException e) {
                       throw new RuntimeException("Failed to upload file", e);
                   }

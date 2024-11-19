@@ -9,4 +9,6 @@ public class TicketDto {
     private Long id;
     private Long storeId;
     private Long price;
+    private String name;
+    private Long categoryId;
 }

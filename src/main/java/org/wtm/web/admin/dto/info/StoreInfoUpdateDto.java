@@ -7,25 +7,33 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
+import jakarta.persistence.Embedded;
 import lombok.*;
 
 import java.time.LocalTime;
 import java.util.List;
+import org.wtm.web.auth.dto.Address;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class StoreInfoUpdateDto {
+
     private String storeName;
-    private String storeAddress;
+
     private List<String> snsAddress;
     private String phone;
+
     @JsonSerialize(using = LocalTimeSerializer.class)
     @JsonDeserialize(using = LocalTimeDeserializer.class)
-    @JsonFormat(pattern = "HH:mm:ss")
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime openTime;
+
     @JsonSerialize(using = LocalTimeSerializer.class)
     @JsonDeserialize(using = LocalTimeDeserializer.class)
-    @JsonFormat(pattern = "HH:mm:ss")
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime closeTime;
+
+    @Embedded
+    private Address storeAddress;
 }

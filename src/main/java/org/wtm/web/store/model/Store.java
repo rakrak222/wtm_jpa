@@ -2,13 +2,16 @@ package org.wtm.web.store.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.wtm.web.auth.dto.Address;
 import org.wtm.web.bookmark.model.Bookmark;
 import org.wtm.web.common.entity.BaseTimeEntity;
+import org.wtm.web.menu.model.Meal;
 import org.wtm.web.review.model.Review;
 import org.wtm.web.ticket.model.Ticket;
 import org.wtm.web.user.model.User;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -28,8 +31,8 @@ public class  Store extends BaseTimeEntity {
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Column
-    private String address;
+    @Embedded
+    private Address address; // 통합된 주소 정보
 
     @Column(length = 20)
     private String contact;
@@ -38,10 +41,12 @@ public class  Store extends BaseTimeEntity {
     @JoinColumn(name = "admin_id")
     private User user;
 
-    @Column(name = "open_time")
+    //초단위 제외
+    @Column(name = "open_time", columnDefinition = "TIME(0)")
     private LocalTime openTime;
 
-    @Column(name = "close_time")
+    //초단위 제외
+    @Column(name = "close_time", columnDefinition = "TIME(0)")
     private LocalTime closeTime;
 
     @Column
@@ -58,4 +63,7 @@ public class  Store extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "store")
     private List<StoreSns> storeSnsList; // StoreSns와의 관계
+
+    @OneToMany(mappedBy = "store")
+    private List<Meal> meals = new ArrayList<>();
 }
