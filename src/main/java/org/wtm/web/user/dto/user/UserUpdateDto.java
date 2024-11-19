@@ -1,4 +1,4 @@
-package org.wtm.web.user.dto;
+package org.wtm.web.user.dto.user;
 
 import jakarta.persistence.Embedded;
 import lombok.Getter;
