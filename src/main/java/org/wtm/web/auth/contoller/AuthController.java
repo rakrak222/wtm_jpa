@@ -11,6 +11,8 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,7 +37,6 @@ import org.wtm.web.user.model.User;
 public class AuthController {
 
     private final AuthService authService;
-    private final StoreService storeService;
 
     @PostMapping("/admin/signUp")
     public ResponseEntity<String> adminSignUp(@RequestBody AdminSignUpDto adminSignUpDto) {
@@ -75,29 +76,28 @@ public class AuthController {
         return ResponseEntity.badRequest().body(new CheckEmailResponseDto(false));
     }
 
-
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         }
 
-        CustomOAuth2User userDetails = (CustomOAuth2User) authentication.getPrincipal();
-        Optional<User> userOptional = authService.getUserByUsername(userDetails.getUsername());
+        String username = extractUsername(authentication);
+        if (username == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
 
-        if (!userOptional.isPresent()) {
+        Optional<User> userOptional = authService.getUserByUsername(username);
+        if (userOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
 
         User user = userOptional.get();
-
         Map<String, Object> body = new HashMap<>();
-        body.put("username", user.getUsername());
-        body.put("role", user.getRole().name()); // 역할 이름을 문자열로 저장
+        body.put("username", user.getEmail());
+        body.put("role", user.getRole().name());
 
-        // ADMIN인 경우 storeID 포함
         if (user.getRole() == UserRole.ADMIN) {
-            // Store 엔티티를 통해 storeID 가져오기
             Optional<Store> storeOptional = authService.getStoreByUser(user);
             body.put("storeId", storeOptional.map(Store::getId).orElse(null));
         }
@@ -117,6 +117,15 @@ public class AuthController {
         return ResponseEntity.ok("Logged out");
     }
 
-
+    private String extractUsername(Authentication authentication) {
+        if (authentication.getPrincipal() instanceof UserDetails userDetails) {
+            return userDetails.getUsername();
+        } else if (authentication.getPrincipal() instanceof OAuth2User oauth2User) {
+            return oauth2User.getAttribute("email");
+        } else if (authentication.getPrincipal() instanceof User user) {
+            return user.getEmail();
+        }
+        return null;
+    }
 }
 

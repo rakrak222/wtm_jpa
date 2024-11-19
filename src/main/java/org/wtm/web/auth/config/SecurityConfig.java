@@ -16,11 +16,12 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.wtm.web.auth.constants.ApiPaths;
+import org.wtm.web.auth.handler.CustomAuthenticationEntryPoint;
 import org.wtm.web.auth.handler.CustomOAuth2FailureHandler;
 import org.wtm.web.auth.handler.CustomOAuth2SuccessHandler;
 import org.wtm.web.auth.jwt.JWTFilter;
 import org.wtm.web.auth.jwt.LoginFilter;
+import org.wtm.web.auth.service.AuthService;
 import org.wtm.web.auth.service.CustomOAuth2UserService;
 import org.wtm.web.auth.utils.JWTUtil;
 
@@ -32,9 +33,14 @@ public class SecurityConfig {
 
     //AuthenticationManager가 인자로 받을 AuthenticationConfiguraion 객체 생성자 주입
     private final AuthenticationConfiguration authenticationConfiguration;
+
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final AuthService authService;
+
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
     private final CustomOAuth2FailureHandler customOAuth2FailureHandler;
+
     private final JWTUtil jwtUtil;
 
     //AuthenticationManager Bean 등록
@@ -69,7 +75,12 @@ public class SecurityConfig {
 
         // 경로별 인가 설정
         http.authorizeHttpRequests((auth) -> auth
-                .anyRequest().permitAll());
+                .requestMatchers("/api/v1/auth/me").authenticated()
+                .anyRequest().permitAll())
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint(customAuthenticationEntryPoint)); // Custom EntryPoint 추가
+
+
 //            .requestMatchers("/",
 //                "/api/v1/auth/user/signUp",
 //                "/api/v1/auth/admin/signUp",
@@ -80,7 +91,7 @@ public class SecurityConfig {
 
         // 일반 로그인용 LoginFilter 추가
         LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil);
-        loginFilter.setFilterProcessesUrl("/api/v1/auth/user/signIn"); // 로그인 경로 설정
+        loginFilter.setFilterProcessesUrl("/api/v1/auth/signIn"); // 로그인 경로 설정
         http.addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
 
         // OAuth2 로그인 설정
@@ -91,7 +102,7 @@ public class SecurityConfig {
         );
 
         // 통합 JWTFilter 추가 - 일반 로그인과 OAuth2 로그인 모두 처리
-        http.addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new JWTFilter(authService, jwtUtil), UsernamePasswordAuthenticationFilter.class);
 //        http.addFilterAfter(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
 //        // 예외 처리 핸들러
