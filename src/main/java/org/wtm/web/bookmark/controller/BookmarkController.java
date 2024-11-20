@@ -17,11 +17,13 @@ public class BookmarkController {
 
 
     @GetMapping("{storeId}/bookmark")
-    public ResponseEntity<?> getBookmark(@PathVariable Long storeId) {
+    public ResponseEntity<?> getBookmark(
+            @PathVariable Long storeId,
+            @RequestHeader("x-username") String username) {
 
         Long userId = 1L; // 테스트를 위해 userId를 2로 고정
 
-        BookmarkResponseDto bookmarkResponseDto = bookmarkService.getBookmarkStatus(storeId, userId);
+        BookmarkResponseDto bookmarkResponseDto = bookmarkService.getBookmarkStatus(storeId, username);
 
         if (bookmarkResponseDto == null) {
             return ResponseEntity.status(404).body("해당 가게를 찾을수 없습니다.");
@@ -30,14 +32,16 @@ public class BookmarkController {
     }
 
     @PostMapping("{storeId}/bookmark")
-    public ResponseEntity<?> addBookmark(@PathVariable Long storeId) {
-        bookmarkService.addBookmark(storeId);
+    public ResponseEntity<?> addBookmark(@PathVariable Long storeId, @RequestHeader("x-username") String username) {
+
+        System.out.println("username = " + username);
+        bookmarkService.addBookmark(storeId, username);
         return ResponseEntity.ok("북마크가 추가되었습니다.");
     }
 
     @DeleteMapping("{storeId}/bookmark")
-    public ResponseEntity<?> removeBookmark(@PathVariable Long storeId) {
-        bookmarkService.removeBookmark(storeId);
+    public ResponseEntity<?> removeBookmark(@PathVariable Long storeId, @RequestHeader("x-username") String username) {
+        bookmarkService.removeBookmark(storeId, username);
         return ResponseEntity.ok("북마크가 삭제되었습니다.");
     }
 }

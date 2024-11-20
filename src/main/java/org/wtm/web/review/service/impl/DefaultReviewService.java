@@ -78,11 +78,11 @@ public class DefaultReviewService implements ReviewService {
     }
 
     @Override
-    public void addReviewLike(Long reviewId, Long fixedUserId) {
+    public void addReviewLike(Long reviewId, String username) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 리뷰가 존재하지 않습니다."));
 
-        User user = userRepository.findById(fixedUserId)
+        User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
 
         ReviewLike reviewLike = ReviewLike.builder()
@@ -94,11 +94,11 @@ public class DefaultReviewService implements ReviewService {
     }
 
     @Override
-    public void removeReviewLike(Long reviewId, Long fixedUserId) {
+    public void removeReviewLike(Long reviewId, String username) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 리뷰가 존재하지 않습니다."));
 
-        User user = userRepository.findById(fixedUserId)
+        User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
 
         ReviewLike reviewLike = reviewLikeRepository.findByUserAndReview(user, review)
@@ -111,7 +111,12 @@ public class DefaultReviewService implements ReviewService {
 
     @Override
     @Transactional(readOnly = true)
-    public Slice<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption, Pageable pageable, Long userId) {
+    public Slice<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption, Pageable pageable, String username) {
+
+        Long userId = userRepository.findByEmail(username)
+                .map(User::getId)
+                .orElse(0L);
+        System.out.println("userId = " + userId);
         Slice<ReviewListDto> reviews = reviewRepositoryCustom.findAllByStoreIdWithSorting(storeId, sortOption, pageable, userId);
 
         reviews.forEach(review -> {
@@ -150,11 +155,11 @@ public class DefaultReviewService implements ReviewService {
 
     @Override
     @Transactional
-    public void addReview(Long storeId, Long ticketHistoryUsageId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files, Long userId) {
+    public void addReview(Long storeId, Long ticketHistoryUsageId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files, String username) {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 Store를 찾을 수 없습니다."));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("해당 ID의 User를 찾을 수 없습니다: " + userId));
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("해당 Email의 User를 찾을 수 없습니다: " + username));
         TicketHistoryUsage ticketHistoryUsage = ticketHistoryUsageRepository.findById(ticketHistoryUsageId)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 TicketHistoryUsage를 찾을 수 없습니다."));
 
