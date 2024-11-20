@@ -21,6 +21,7 @@ public class TicketAllHistoryDto {
     private String formattedTime;
     private String storeName;
     private Long price;
+    private Boolean hasReview;
 
     // Builder에서 변환 작업 추가
     public static class TicketAllHistoryDtoBuilder {

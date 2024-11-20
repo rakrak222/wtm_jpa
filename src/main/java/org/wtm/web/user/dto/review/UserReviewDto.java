@@ -17,8 +17,9 @@ public class UserReviewDto {
     private LocalDateTime regDate;
     private Double averageScore;
     private String storeName; // Store의 추가 필드
-    private String storeImageUrl;
+    private String reviewImgUrl;
     private String createdTime;
+
 
     // Builder에서 변환 작업 추가
     public static class UserReviewDtoBuilder {
