@@ -197,6 +197,7 @@ public class DefaultMyPageService implements MyPageService {
                 .findByUserIdAndRegDateBetween(userId, startDateTime, endDateTime)
                 .stream()
                 .map(usage -> TicketAllHistoryDto.builder()
+                        .storeId(usage.getTicket().getStore().getId())
                         .id(usage.getId())
                         .userId(userId)
                         .amount(usage.getAmount())
@@ -214,6 +215,7 @@ public class DefaultMyPageService implements MyPageService {
                 .findByUserIdAndRegDateBetween(userId, startDateTime, endDateTime)
                 .stream()
                 .map(purchase -> TicketAllHistoryDto.builder()
+                        .storeId(purchase.getTicket().getStore().getId())
                         .id(purchase.getId())
                         .userId(userId)
                         .amount(purchase.getAmount())
@@ -372,6 +374,7 @@ public class DefaultMyPageService implements MyPageService {
 
             return reviewsWithAverageScore;
         }
+        System.out.println("hello mf?");
         return null;
     }
 
