@@ -75,9 +75,10 @@ public class ReviewController {
             @RequestParam("revisit") boolean revisit,
             @RequestParam("reviewContent") String reviewContent,
             @RequestParam("reviewScoresDtos") String scoresJson,
-            @RequestParam(value = "files", required = false) List<MultipartFile> files) {
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
+            @RequestHeader("x-username") String username) {
 
-        Long userId = 1L; // 테스트를 위해 userId를 1로 고정
+
 
         // JSON 문자열을 DTO로 변환
         ObjectMapper objectMapper = new ObjectMapper();
@@ -92,7 +93,7 @@ public class ReviewController {
         ReviewRequestDto reviewRequestDto = new ReviewRequestDto(revisit, reviewContent, scores);
 
         // 리뷰 서비스 호출
-        reviewService.addReview(storeId, ticketHistoryUsageId, reviewRequestDto, files, userId);
+        reviewService.addReview(storeId, ticketHistoryUsageId, reviewRequestDto, files, username);
         return ResponseEntity.status(201).body(Map.of("message", "리뷰가 성공적으로 등록되었습니다."));
     }
 

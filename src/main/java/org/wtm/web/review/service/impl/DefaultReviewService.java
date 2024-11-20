@@ -155,11 +155,11 @@ public class DefaultReviewService implements ReviewService {
 
     @Override
     @Transactional
-    public void addReview(Long storeId, Long ticketHistoryUsageId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files, Long userId) {
+    public void addReview(Long storeId, Long ticketHistoryUsageId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files, String username) {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 Store를 찾을 수 없습니다."));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("해당 ID의 User를 찾을 수 없습니다: " + userId));
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("해당 Email의 User를 찾을 수 없습니다: " + username));
         TicketHistoryUsage ticketHistoryUsage = ticketHistoryUsageRepository.findById(ticketHistoryUsageId)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 TicketHistoryUsage를 찾을 수 없습니다."));
 
