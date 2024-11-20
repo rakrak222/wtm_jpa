@@ -15,9 +15,9 @@ import org.wtm.web.user.model.User;
 
 public interface StoreService {
 
-    List<StoreResponseDto> getAllStores();
 
-    List<StoreResponseDto> getStores(String query);
+
+    List<StoreResponseDto> getStores(String query, String username);
 
     StoreReviewStatsDto getStoreReviewStats(Long storeId);
 
