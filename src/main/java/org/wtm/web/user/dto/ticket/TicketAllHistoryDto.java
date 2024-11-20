@@ -10,7 +10,7 @@ import java.util.Locale;
 @Getter
 @Builder
 public class TicketAllHistoryDto {
-
+    private Long storeId;
     private Long id;
     private Long userId;
     private Long ticketId;
