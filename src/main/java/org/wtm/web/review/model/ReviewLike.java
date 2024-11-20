@@ -18,8 +18,6 @@ public class ReviewLike extends BaseTimeEntity {
     @Column(name = "review_like_id")
     private Long Id;
 
-    @Column(nullable = false, length = 100)
-    private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

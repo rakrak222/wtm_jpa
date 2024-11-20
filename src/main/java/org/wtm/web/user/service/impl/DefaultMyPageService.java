@@ -1,8 +1,10 @@
 package org.wtm.web.user.service.impl;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,8 +17,8 @@ import org.wtm.web.store.model.Store;
 import org.wtm.web.ticket.model.Ticket;
 import org.wtm.web.ticket.model.TicketHistoryPurchase;
 import org.wtm.web.ticket.model.TicketHistoryUsage;
-import org.wtm.web.user.dto.UserResponseDto;
-import org.wtm.web.user.dto.UserUpdateDto;
+import org.wtm.web.user.dto.user.UserResponseDto;
+import org.wtm.web.user.dto.user.UserUpdateDto;
 import org.wtm.web.user.dto.bookmark.BookmarkDto;
 import org.wtm.web.user.dto.review.UserReviewDto;
 import org.wtm.web.user.dto.ticket.*;
@@ -30,6 +32,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DefaultMyPageService implements MyPageService {
@@ -44,14 +47,12 @@ public class DefaultMyPageService implements MyPageService {
     private final TicketHistoryPurchaseRepository ticketHistoryPurchaseRepository;
     private final TicketHistoryUsageRepository ticketHistoryUsageRepository;
     private final ReviewScoreRepository reviewScoreRepository;
-
-    @Value("${image.upload-profile-dir}")
-    private String uploadDir;
+    private final ReviewImgRepository reviewImgRepository;
 
     private final PasswordEncoder passwordEncoder;
 
-    public UserResponseDto getMyPage(Long id) {
-        User user = userRepository.findUserById(id);
+    public UserResponseDto getMyPage(String username) {
+        User user = userRepository.findOneByEmail(username);
 
         return UserResponseDto.builder()
                 .email(user.getEmail())
@@ -60,15 +61,15 @@ public class DefaultMyPageService implements MyPageService {
                 .build();
     }
 
-    public UserResponseDto getMySettings(Long id) {
-
-        User user = userRepository.findUserById(id);
+    public UserResponseDto getMySettings(String username) {
+        User user = userRepository.findOneByEmail(username);
 
         return UserResponseDto.builder()
                 .email(user.getEmail())
                 .name(user.getName())
                 .address(user.getAddress())
                 .phone(user.getPhone())
+                .profilePicture(user.getProfilePicture())
                 .build();
     }
 
@@ -84,9 +85,11 @@ public class DefaultMyPageService implements MyPageService {
 
             // 프로필 사진 업로드 처리
             MultipartFile file = userUpdateDto.getProfilePicture();
-            if (file != null) {  // 파일이 null이 아니고 비어있지 않으면
-                String savedFileUrl = uploadService.uploadFile(file, uploadDir);
-                existedUser.updateProfilePicture(savedFileUrl);
+            if (file != null && !file.isEmpty()) {  // 파일이 null이 아니고 비어있지 않으면
+                String savedFileUrl = uploadService.uploadFile(file, "users");
+                if (savedFileUrl != null) {
+                    existedUser.updateProfilePicture(savedFileUrl);
+                }
             }
 
             // 비밀번호 인코딩 처리
@@ -97,7 +100,8 @@ public class DefaultMyPageService implements MyPageService {
         return false;
     }
 
-    public List<TicketSummaryDto> getTicketsOwnedByUser(Long userId) {
+    public List<TicketSummaryDto> getTicketsOwnedByUser(String username) {
+        Long userId = userRepository.findIdByEmail(username);
         // Step 1: 구입 티켓과 사용 티켓 조회
         List<TicketHistoryPurchase> purchasedTickets = ticketHistoryPurchaseRepository.findByUserId(userId);
         List<TicketHistoryUsage> usedTickets = ticketHistoryUsageRepository.findByUserId(userId);
@@ -106,19 +110,19 @@ public class DefaultMyPageService implements MyPageService {
 
         // (1) 구입 티켓 수량을 ticketId로 그룹화하여 Map에 저장
         purchasedTickets.forEach(purchaseTicket -> {
-            Long ticketId = purchaseTicket.getTicket().getId();
-            // 아래 코드는 ticketId로 된 key가 없을 시, 해당 데이터를 key로 그리고 value를 ticketSummaryDto 객체로 넣어주는 것
-            TicketSummaryDto ticketSummaryDto = ticketMap.computeIfAbsent(ticketId, k ->
-                    TicketSummaryDto.form(
-                            purchaseTicket.getTicket(),
-                            purchaseTicket.getTicket().getStore(),
-                            0L,
-                            0L,
-                            0L,
-                            0.0
-                    ));
-            ticketSummaryDto.addPurchasedTickets(purchaseTicket.getAmount());
-
+            if (purchaseTicket.getTicket() != null && purchaseTicket.getTicket().getStore() != null) {
+                Long ticketId = purchaseTicket.getTicket().getId();
+                TicketSummaryDto ticketSummaryDto = ticketMap.computeIfAbsent(ticketId, k ->
+                        TicketSummaryDto.form(
+                                purchaseTicket.getTicket(),
+                                purchaseTicket.getTicket().getStore(),
+                                0L,
+                                0L,
+                                0L,
+                                0.0
+                        ));
+                ticketSummaryDto.addPurchasedTickets(purchaseTicket.getAmount());
+            }
         });
 
         // (2) 사용 티켓 수량을 ticketId로 Map에 추가
@@ -130,90 +134,63 @@ public class DefaultMyPageService implements MyPageService {
             }
         });
 
-        // Step 2: 남은 티켓 수가 0보다 큰 티켓을 필터링하여 storeId 수집
-        List<Long> storeIds = new ArrayList<>();
-        //  values.stream이라서 ticketMap의 value인 ticketsummaryDto를 stream화 한다.
-        List<TicketSummaryDto> ticketListInfo = ticketMap.values().stream()
+        // Step 2: 남은 티켓 수가 0보다 큰 티켓의 storeId를 수집 (중복 제거)
+        List<Long> storeIds = ticketMap.values().stream()
                 .filter(ticketSummaryDto -> ticketSummaryDto.getTicketAmount() > 0)
-                .peek(ticketSummaryDto -> storeIds.add(ticketSummaryDto.getStoreId()))
+                .map(TicketSummaryDto::getStoreId)
+                .distinct() // 중복 제거
                 .collect(Collectors.toList());
 
         // Step 3: storeId에 해당하는 리뷰의 평균 점수를 계산
         Map<Long, Double> reviewAvgMap = storeIds.stream()
                 .collect(Collectors.toMap(
                         storeId -> storeId,
-                        reviewRepository::calculateAvgByStoreId
+                        storeId -> {
+                            Double avg = reviewRepository.calculateAvgByStoreId(storeId);
+                            return avg != null ? Math.round(avg * 10) / 10.0 : 0.0;
+                        },
+                        (existing, replacement) -> existing // 중복 처리: 기존 값 유지
                 ));
 
         // Step 4: store 정보 가져오기 및 최종 JSON 생성
         List<Store> stores = storeRepository.findByIdIn(storeIds);
         Map<Long, Store> storeMap = stores.stream()
                 .collect(Collectors.toMap(Store::getId, store -> store));
-        // step 5 : bookmark 데이터 조회도 추가
+
+        // Step 5: bookmark 데이터 조회
         Map<Long, Boolean> bookmarkMap = storeIds.stream()
                 .collect(Collectors.toMap(
                         storeId -> storeId,
                         storeId -> bookmarkRepository.findOneByStoreIdAndUserId(storeId, userId) != null
                 ));
 
-        ticketListInfo.forEach(ticketInfo -> {
-            Long storeId = ticketInfo.getStoreId();
+        List<TicketSummaryDto> ticketListInfo = ticketMap.values().stream()
+                .filter(ticketSummaryDto -> ticketSummaryDto.getTicketAmount() > 0)
+                .peek(ticketInfo -> {
+                    Long storeId = ticketInfo.getStoreId();
 
-            Double reviewAverage = reviewAvgMap.get(storeId);
-            ticketInfo.addReviewAverage(reviewAverage);
+                    // 리뷰 평균 점수와 북마크 상태 추가
+                    Double reviewAverage = reviewAvgMap.get(storeId);
+                    ticketInfo.addReviewAverage(reviewAverage);
 
-            boolean isBookmarked = bookmarkMap.getOrDefault(storeId, false);
-            ticketInfo.checkBookmark(isBookmarked);
-        });
+                    boolean isBookmarked = bookmarkMap.getOrDefault(storeId, false);
+                    ticketInfo.checkBookmark(isBookmarked);
+                })
+                .collect(Collectors.toList());
 
         return ticketListInfo;
     }
 
-    @Transactional
-    public boolean useMyTicket(TicketUsageDto ticketUsageDto) {
-        Integer purchasedTicketAmount =
-                ticketHistoryPurchaseRepository.getPurchaseAmountByUserId(ticketUsageDto.getUserId());
-        if(purchasedTicketAmount != null && purchasedTicketAmount > 0){
-            TicketHistoryUsage ticketHistoryUsage = TicketHistoryUsage.builder()
-                    .user(userRepository.findById(ticketUsageDto.getUserId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다.")))
-                    .ticket(ticketRepository.findById(ticketUsageDto.getTicketId()).orElseThrow(() -> new IllegalArgumentException("티켓 정보를 찾을 수 없습니다.")))
-                    .amount(ticketUsageDto.getAmount())
-                    .build();
-
-            // 기존 엔티티가 존재하지 않을 경우에만 저장
-            if (ticketHistoryUsage.getId() == null) {
-                ticketHistoryUsageRepository.save(ticketHistoryUsage);
-                return true;
-            }else {
-                System.out.println(ticketHistoryUsage.getId() + "는 이미 존재합니다.");
-                return false;
-            }
-        }
-        System.out.println("사용할 티켓이 존재하지 않습니다");
-        return false;
-    }
-
-    @Transactional
-    public boolean purchaseMyTicket(TicketPurchaseDto ticketPurchaseDto) {
-
-        TicketHistoryPurchase ticketHistoryPurchase = TicketHistoryPurchase.builder()
-                .user(userRepository.findById(ticketPurchaseDto.getUserId())
-                        .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다.")))
-                .ticket(ticketRepository.findById(ticketPurchaseDto.getTicketId())
-                        .orElseThrow(() -> new IllegalArgumentException("티켓을 찾을 수 없습니다.")))
-                .amount(ticketPurchaseDto.getAmount())
-                .build();
-        ticketHistoryPurchaseRepository.save(ticketHistoryPurchase);
-
-        return true;
-    }
-
-    public TicketHistoryResponseDto getMyTicketHistory(Long userId, int month, int year) {
+    public TicketHistoryResponseDto getMyTicketHistory(String username, int month, int year, int page, int size) {
+        Long userId = userRepository.findIdByEmail(username);
         // 시작일과 종료일 설정
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
+
+        // Pageable 설정
+        Pageable pageable = PageRequest.of(page-1, size, Sort.by("regDate").ascending());
 
         // TicketHistoryUsage 데이터 가져오기
         List<TicketAllHistoryDto> usageHistory = ticketHistoryUsageRepository
@@ -226,8 +203,9 @@ public class DefaultMyPageService implements MyPageService {
                         .ticketId(usage.getTicket().getId())
                         .type("usage")
                         .regDate(usage.getRegDate())
-                        .price(usage.getAmount()*ticketRepository.findPriceById(usage.getTicket().getId()))
+                        .price(usage.getAmount() * ticketRepository.findPriceById(usage.getTicket().getId()))
                         .storeName(usage.getTicket().getStore().getName())
+                        .hasReview(usage.getReview() != null)
                         .build())
                 .collect(Collectors.toList());
 
@@ -242,41 +220,49 @@ public class DefaultMyPageService implements MyPageService {
                         .ticketId(purchase.getTicket().getId())
                         .type("purchase")
                         .regDate(purchase.getRegDate())
-                        .price(purchase.getAmount()*ticketRepository.findPriceById(purchase.getTicket().getId()))
+                        .price(purchase.getAmount() * ticketRepository.findPriceById(purchase.getTicket().getId()))
                         .storeName(purchase.getTicket().getStore().getName())
                         .build())
                 .collect(Collectors.toList());
 
-        // totalPurchasedPrice와 totalUsedPrice 계산
-        Long totalPurchasedPrice = purchaseHistory.stream()
-                .mapToLong(purchase -> purchase.getAmount() * ticketRepository.findPriceById(purchase.getTicketId()))
+        // 두 목록을 합치고 날짜로 정렬
+        List<TicketAllHistoryDto> combinedHistory = Stream.concat(purchaseHistory.stream(), usageHistory.stream())
+                .sorted(Comparator.comparing(TicketAllHistoryDto::getRegDate))
+                .collect(Collectors.toList());
+
+        // 페이지네이션 수동 적용
+        int start = Math.min((int) pageable.getOffset(), combinedHistory.size());
+        int end = Math.min((start + size), combinedHistory.size());
+        List<TicketAllHistoryDto> paginatedHistory = combinedHistory.subList(start, end);
+
+        // totalPurchasedPrice와 totalUsedPrice 계산 (페이지네이션과 무관하게 전체 데이터 기준)
+        Long totalPurchasedPrice = ticketHistoryPurchaseRepository.findByUserIdAndRegDateBetween(userId, startDateTime, endDateTime)
+                .stream()
+                .mapToLong(
+                        purchase -> purchase.getAmount() * ticketRepository.findPriceById(purchase.getTicket().getId())
+                )
                 .sum();
 
-        Long totalUsedPrice = usageHistory.stream()
-                .mapToLong(usage -> usage.getAmount() * ticketRepository.findPriceById(usage.getTicketId()))
+        Long totalUsedPrice = ticketHistoryUsageRepository.findByUserIdAndRegDateBetween(userId, startDateTime, endDateTime)
+                .stream()
+                .mapToLong(usage -> usage.getAmount() * ticketRepository.findPriceById(usage.getTicket().getId()))
                 .sum();
 
         // 전체 티켓 개수 계산 (purchase - usage)
         Long totalAmount = purchaseHistory.stream().mapToLong(TicketAllHistoryDto::getAmount).sum()
                 - usageHistory.stream().mapToLong(TicketAllHistoryDto::getAmount).sum();
 
-        // 두 목록을 합치고 날짜로 정렬
-        // 메서드화 시킨다면, combinedHistory 로 합체 및 정렬화 시키는거 따로 뺄것.
-        // 이름 달라야할 이유가 오로지 하나의 서비스여서그럼.
-        List<TicketAllHistoryDto> combinedHistoryForAll = Stream.concat(purchaseHistory.stream(), usageHistory.stream())
-                .sorted(Comparator.comparing(TicketAllHistoryDto::getRegDate))
-                .collect(Collectors.toList());
-
+        // 페이지네이션된 결과만 반환하지 않고 모든 데이터를 합친 후 반환
         return TicketHistoryResponseDto.builder()
-                .combinedHistory(combinedHistoryForAll)
+                .combinedHistory(paginatedHistory)
                 .totalPurchasedPrice(totalPurchasedPrice)
                 .totalUsedPrice(totalUsedPrice)
                 .totalAmount(totalAmount)
                 .build();
     }
 
-
-    public TicketHistoryResponseDto getMyTicketHistoryByStore(Long userId, Long storeId, int month, int year) {
+    public TicketHistoryResponseDto getMyTicketHistoryByStore(String username, Long storeId, int month, int year) {
+        Long userId = userRepository.findIdByEmail(username);
         // 시작일과 종료일 설정
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
@@ -363,7 +349,8 @@ public class DefaultMyPageService implements MyPageService {
     }
 
 
-    public List<UserReviewDto> getMyReviews(Long userId) {
+    public List<UserReviewDto> getMyReviews(String username) {
+        Long userId = userRepository.findIdByEmail(username);
         //userId로 review와 해당하는 가게 정보 가져옴
         List<Review> reviews = reviewRepository.findByUserId(userId);
         if(!reviews.isEmpty()){
@@ -371,14 +358,15 @@ public class DefaultMyPageService implements MyPageService {
             List<UserReviewDto> reviewsWithAverageScore = reviews.stream().map(review -> {
                 // @Query를 이용해 평균 점수를 한 번에 가져옴
                 Double averageScore = reviewScoreRepository.findAverageScoreByReviewId(review.getId());
+                String reviewImg = reviewImgRepository.findImgByReviewId(review.getId());
                 // 리뷰와 평균 점수를 합쳐서 반환
                 return UserReviewDto.builder()
                         .reviewId(review.getId())
                         .content(review.getContent())
+                        .reviewImgUrl(reviewImg)
                         .regDate(review.getRegDate())
                         .averageScore(averageScore != null ? averageScore : 0.0)
                         .storeName(review.getStore().getName()) // 필요한 Store 필드를 추가
-//                         .storeImageUrl()
                         .build();
             }).collect(Collectors.toList());
 
@@ -387,7 +375,8 @@ public class DefaultMyPageService implements MyPageService {
         return null;
     }
 
-    public List<BookmarkDto> getMyBookmarks(Long userId) {
+    public List<BookmarkDto> getMyBookmarks(String username) {
+        Long userId = userRepository.findIdByEmail(username);
         List<Bookmark> bookmarks = bookmarkRepository.findAllByUserId(userId);
 
         if(!bookmarks.isEmpty()) {
@@ -396,14 +385,18 @@ public class DefaultMyPageService implements MyPageService {
                     .map(bookmark -> {
                         Long storeId = bookmark.getStore().getId();
                         // storeId로 티켓 정보 조회
-                        Ticket ticket = ticketRepository.findOneByStoreId(storeId);
+                        List<Ticket> tickets = ticketRepository.findByStoreId(storeId, Sort.by(Sort.Direction.DESC, "price"));
+                        if (tickets.isEmpty()) {
+                            throw new IllegalArgumentException("No tickets found for the given storeId.");
+                        }
+                        Ticket ticket = tickets.get(0);
 
                         return BookmarkDto.builder()
                                 .storeId(storeId)
                                 .storeName(bookmark.getStore().getName())
                                 .storeOpenTime(bookmark.getStore().getOpenTime())
                                 .storeCloseTime(bookmark.getStore().getCloseTime())
-                                .ticketId(ticket != null ? ticket.getId() : null)
+                                .storeImgUrl(bookmark.getStore().getImg())
                                 .ticketPrice(ticket != null ? ticket.getPrice() : 0)
                                 .reviewAverage(reviewRepository.calculateAvgByStoreId(storeId)) // @Query를 이용한 평균 점수 계산
                                 .isBookmarked(true)
@@ -415,35 +408,45 @@ public class DefaultMyPageService implements MyPageService {
     }
 
     @Transactional
-    public boolean deleteMyReview(Long reviewId) {
-        Review findReview = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new EntityNotFoundException("Review not found with ID: " + reviewId));
-        reviewRepository.deleteById(reviewId);
-        return true;
-    }
+    public boolean deleteMyReview(Long reviewId, String username) {
+        Long userId = userRepository.findIdByEmail(username);
 
-    @Transactional
-    public boolean saveMyBookmark(Long storeId, Long userId) {
-        Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new IllegalArgumentException("Store not found with id: " + storeId));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
-
-        Bookmark bookmark = bookmarkRepository.findByStoreIdAndUserId(storeId, userId)
-                .orElseGet(() -> Bookmark.builder()
-                        .store(store)
-                        .user(user)
-                        .build());
-
-        if (bookmark.getId() == null) {
-            bookmarkRepository.save(bookmark);
+        Review review = reviewRepository.findByIdAndUserId(reviewId, userId)
+                .orElse(null);
+        if(review!=null){
+            reviewRepository.deleteById(reviewId);
             return true;
         }
         return false;
     }
 
     @Transactional
-    public boolean deleteMyBookmark(Long storeId, Long userId) {
+    public boolean saveMyBookmark(Long storeId, String username) {
+        Long userId = userRepository.findIdByEmail(username);
+
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("Store not found with id: " + storeId));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+        // 이미 존재하는지 확인
+        if (bookmarkRepository.existsByStoreIdAndUserId(storeId, userId)) {
+            return false;
+        }
+
+        Bookmark bookmark = Bookmark.builder()
+                        .store(store)
+                        .user(user)
+                        .build();
+
+        bookmarkRepository.save(bookmark);
+        return true;
+
+    }
+
+    @Transactional
+    public boolean deleteMyBookmark(Long storeId, String username) {
+        Long userId = userRepository.findIdByEmail(username);
+
         Bookmark bookmark = bookmarkRepository.findByStoreIdAndUserId(storeId, userId)
                 .orElse(null);
 
@@ -454,5 +457,39 @@ public class DefaultMyPageService implements MyPageService {
         return false;
     }
 
+    public TicketDto getMyTicketDetail(Long storeId, String username) {
+        Long userId = userRepository.findIdByEmail(username);
+        // storeId로 관련된 모든 ticket 조회 (가격 내림차순 정렬)
+        List<Ticket> tickets = ticketRepository.findByStoreId(storeId, Sort.by(Sort.Direction.DESC, "price"));
+        if (tickets.isEmpty()) {
+            throw new IllegalArgumentException("No tickets found for the given storeId.");
+        }
+        // ticket IDs 추출
+        List<Long> ticketIds = tickets.stream()
+                .map(Ticket::getId)
+                .toList();
+
+        // 구매 및 사용 기록 계산
+        Long purchaseAmount = ticketHistoryPurchaseRepository.countByTicketIdsAndUserId(ticketIds, userId);
+        Long usageAmount = ticketHistoryUsageRepository.countByTicketIdsAndUserId(ticketIds, userId);
+
+        long totalAmount = (purchaseAmount != null ? purchaseAmount : 0L) - (usageAmount != null ? usageAmount : 0L);
+
+        // Bookmark 여부 확인
+        Bookmark bookmark = bookmarkRepository.findOneByStoreIdAndUserId(storeId, userId);
+        boolean isBookmarked = bookmark != null;
+
+        // 첫 번째 ticket의 store 정보 사용
+        Store store = tickets.get(0).getStore();
+
+        // DTO 생성 및 반환
+        return TicketDto.builder()
+                .userId(userId)
+                .storeName(store.getName())
+                .storeId(store.getId())
+                .isBookmarked(isBookmarked)
+                .ticketAmount(totalAmount)
+                .build();
+    }
 
 }

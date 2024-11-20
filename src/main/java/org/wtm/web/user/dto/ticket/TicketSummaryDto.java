@@ -6,13 +6,14 @@ import org.wtm.web.store.model.Store;
 import org.wtm.web.ticket.model.Ticket;
 
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 @Getter
 @Builder
 public class TicketSummaryDto {
-    private LocalTime storeClosetime;
-    private LocalTime storeOpentime;
-    private String stroreName;
+    private String storeClosetime;
+    private String storeOpentime;
+    private String storeName;
     private Long storeId;
     private Long ticketId;
     private Long ticketPrice;
@@ -21,6 +22,7 @@ public class TicketSummaryDto {
     private Long ticketAmount;
     private Double reviewAverage;
     private Boolean isBookmarked;
+    private String storeImgUrl;
 
     public void addPurchasedTickets(Long amount) {
         this.totalPurchasedTickets += amount;
@@ -50,15 +52,16 @@ public class TicketSummaryDto {
             ) {
         return TicketSummaryDto.builder()
                 .storeId(store.getId())
-                .stroreName(store.getName())
-                .storeOpentime(store.getOpenTime())
-                .storeClosetime(store.getCloseTime())
+                .storeName(store.getName())
+                .storeOpentime(store.getOpenTime().format(DateTimeFormatter.ofPattern("HH:mm")))
+                .storeClosetime(store.getCloseTime().format(DateTimeFormatter.ofPattern("HH:mm")))
                 .ticketPrice(ticket.getPrice())
                 .totalPurchasedTickets(totalPurchasedTickets)
                 .totalUsedTickets(totalUsedTickets)
                 .ticketAmount(ticketAmount)
                 .reviewAverage(reviewAverage)
                 .ticketId(ticket.getId())
+                .storeImgUrl(ticket.getStore().getImg())
                 .build();
     }
 

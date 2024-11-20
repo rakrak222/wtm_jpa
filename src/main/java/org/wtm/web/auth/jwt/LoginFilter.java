@@ -88,6 +88,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         //UserDetailsS
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         String username = customUserDetails.getUsername();
+        Long userId = customUserDetails.getUser().getId();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
@@ -109,6 +110,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         body.put("message", "Login successful");
         body.put("username", username);
         body.put("role", role);
+        body.put("userId", String.valueOf(userId));
 
         response.setContentType("application/json");
         response.getWriter().write(new ObjectMapper().writeValueAsString(body));

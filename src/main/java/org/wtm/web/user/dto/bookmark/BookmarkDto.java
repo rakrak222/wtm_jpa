@@ -11,8 +11,8 @@ public class BookmarkDto {
     private LocalTime storeCloseTime;
     private LocalTime storeOpenTime;
     private String storeName;
+    private String storeImgUrl;
     private Long storeId;
-    private Long ticketId;
     private Long ticketPrice;
     private Double reviewAverage;
     private Boolean isBookmarked;

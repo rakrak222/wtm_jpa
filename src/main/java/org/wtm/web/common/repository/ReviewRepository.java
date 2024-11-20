@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.wtm.web.review.model.Review;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
@@ -38,4 +39,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @EntityGraph(attributePaths = "store")
     List<Review> findByUserId(Long userId);
+
+    Optional<Review> findByIdAndUserId(Long reviewId, Long userId);
 }
