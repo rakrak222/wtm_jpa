@@ -5,8 +5,8 @@ import org.wtm.web.bookmark.dto.BookmarkResponseDto;
 
 public interface BookmarkService {
 
-    void addBookmark(Long storeId);
-    void removeBookmark(Long storeId);
+    void addBookmark(Long storeId, String username);
+    void removeBookmark(Long storeId, String username);
 
-    BookmarkResponseDto getBookmarkStatus(Long storeId, Long userId);
+    BookmarkResponseDto getBookmarkStatus(Long storeId, String username);
 }
