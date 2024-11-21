@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wtm.web.common.repository.StoreRepository;
+import org.wtm.web.common.repository.UserRepository;
 import org.wtm.web.common.service.GeocodingService;
 import org.wtm.web.store.dto.StoreAddressResponseDto;
 import org.wtm.web.store.dto.StoreDetailResponseDto;
@@ -30,30 +31,33 @@ public class DefaultStoreService implements StoreService {
     private final StoreRepository storeRepository;
     private final StoreDetailMapper storeDetailMapper;
     private final GeocodingService geocodingService;
+    private final UserRepository userRepository;
 
 
 
-    // 모든 가게 조회(검색기능 없는 버전)
-    @Override
-    @Transactional
-    public List<StoreResponseDto> getAllStores() {        // 1. StoreRepository에서 fetch join을 통해 데이터를 가져옴
-        List<Store> stores = storeRepository.findAllWithDetails();
-
-        // 2. 가져온 데이터를 DTO로 변환
-        List<StoreResponseDto> result = stores.stream()
-                .map(StoreMapper::toDto)
-                .collect(Collectors.toList());
-
-        // 3. 결과 반환
-        return result;
-    }
+//    // 모든 가게 조회(검색기능 없는 버전)
+//    @Override
+//    @Transactional
+//    public List<StoreResponseDto> getAllStores() {        // 1. StoreRepository에서 fetch join을 통해 데이터를 가져옴
+//        List<Store> stores = storeRepository.findAllWithDetails();
+//
+//        // 2. 가져온 데이터를 DTO로 변환
+//        List<StoreResponseDto> result = stores.stream()
+//                .map(StoreMapper::toDto)
+//                .collect(Collectors.toList());
+//
+//        // 3. 결과 반환
+//        return result;
+//    }
 
 
     // 가게 조회(검색 기능 포함 - 이름 및 오늘의 메뉴)
     @Override
     @Transactional
-    public List<StoreResponseDto> getStores(String query){
-
+    public List<StoreResponseDto> getStores(String query, String username){
+        Long userId = userRepository.findByEmail(username)
+                .map(User::getId)
+                .orElse(0L);
         List<Store> stores;
 
         if(query != null && !query.isEmpty()) {
@@ -63,7 +67,7 @@ public class DefaultStoreService implements StoreService {
         }
 
         List<StoreResponseDto> result = stores.stream()
-                .map(StoreMapper::toDto)
+                .map(store -> StoreMapper.toDto(store, userId)) // userId를 전달
                 .collect(Collectors.toList());
 
         return result;
