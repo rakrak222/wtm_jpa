@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,6 +37,11 @@ public class JWTFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
         FilterChain filterChain) throws ServletException, IOException {
 
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String token = getTokenFromRequest(request);
 
         // 토큰이 없거나 만료된 경우 처리
@@ -48,12 +55,18 @@ public class JWTFilter extends OncePerRequestFilter {
             log.info("JWT token is expired.");
 
             // 만료된 토큰 쿠키 삭제
-            Cookie expiredCookie = new Cookie("Authorization", null);
-            expiredCookie.setHttpOnly(true);
-            expiredCookie.setPath("/");
-            expiredCookie.setMaxAge(0); // 즉시 만료
-            response.addCookie(expiredCookie);
+            // JWT 토큰을 쿠키로 전달 (Set-Cookie 헤더 직접 설정)
+            ResponseCookie expiredCookie = ResponseCookie.from("Authorization", token)
+                .httpOnly(true)
+                .secure(false) // HTTPS 환경에서는 true로 설정
+                .path("/")
+                .domain("localhost")
+                .maxAge(0) // 즉시 만료
+                .sameSite("Lax") // 필요에 따라 None, Lax, Strict 설정
+                .build();
 
+            // 쿠키를 응답 헤더에 추가
+            response.setHeader(HttpHeaders.SET_COOKIE, expiredCookie.toString());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("JWT token expired. Please re-authenticate.");
             return;
@@ -127,7 +140,6 @@ public class JWTFilter extends OncePerRequestFilter {
             log.info("JWT token found in Authorization header.");
             return authorizationHeader.substring(7); // "Bearer " 부분 제거
         }
-        log.info("No JWT token found in request.");
         return null; // 토큰이 없으면 null 반환
     }
 

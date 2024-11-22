@@ -12,6 +12,8 @@ import java.util.Iterator;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -74,7 +76,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         // Role mismatch check
         if (!role.equals(dbRole)) {
             log.warn("Role mismatch for user: {}. Requested: {}, Actual: {}", username, role, dbRole);
-            throw new AuthenticationException("Role mismatch") {};
+            throw new AuthenticationException("사용자 유형(손님, 사장님)을 확인하세요.") {};
         }
 
         return authentication;
@@ -85,6 +87,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication)
         throws IOException {
 
+        Long expirationMs = 60*60*10L;
         //UserDetailsS
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         String username = customUserDetails.getUsername();
@@ -95,15 +98,20 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
-        String token = jwtUtil.createJwt(username, role, 60*60*10L);
+        String token = jwtUtil.createJwt(username, role, expirationMs);
 
-        // JWT 토큰을 쿠키로 전달
-        Cookie cookie = new Cookie("Authorization", token);
-        cookie.setHttpOnly(true);
-//        cookie.setSecure(true); // HTTPS 환경에서만 전송
-        cookie.setPath("/");
-        cookie.setMaxAge(60 * 60 * 10); // 토큰 유효기간 설정 (초 단위)
-        response.addCookie(cookie);
+        // JWT 토큰을 쿠키로 전달 (Set-Cookie 헤더 직접 설정)
+        ResponseCookie cookie = ResponseCookie.from("Authorization", token)
+            .httpOnly(true)
+            .secure(false) // HTTPS 환경에서는 true로 설정
+            .path("/")
+            .domain("localhost")
+            .maxAge(expirationMs / 1000) // 초 단위로 변환
+            .sameSite("Lax") // 필요에 따라 None, Lax, Strict 설정
+            .build();
+
+        // 쿠키를 응답 헤더에 추가
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         // JSON 응답 작성
         Map<String, String> body = new HashMap<>();
