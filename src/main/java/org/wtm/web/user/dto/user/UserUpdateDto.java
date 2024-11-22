@@ -18,7 +18,7 @@ public class UserUpdateDto {
     private String role;           // 사용자 권한 (예: USER, ADMIN)
 
     @Embedded
-    private Address address;        // 주소
+    private Address userAddress;        // 주소
 
     private String phone;          // 전화번호
     private MultipartFile profilePicture; // 프로필 사진 URL

@@ -35,10 +35,10 @@ public class TicketHistoryUsage extends BaseTimeEntity {
     @Column(nullable = false)
     private Long amount;
 
-    @OneToOne(mappedBy = "ticketHistoryUsage", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "ticketHistoryUsage")
     private Review review;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ticket_history_purchase_id", nullable = true)
+    @JoinColumn(name = "ticket_history_purchase_id", nullable = false)
     private TicketHistoryPurchase purchase;
 }

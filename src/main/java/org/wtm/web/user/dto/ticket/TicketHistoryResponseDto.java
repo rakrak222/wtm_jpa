@@ -12,4 +12,7 @@ public class TicketHistoryResponseDto {
     private Long totalPurchasedPrice;
     private Long totalUsedPrice;
     private Long totalAmount;
+    private int currentPage;
+    private int totalPages;
+    private long totalItems;
 }

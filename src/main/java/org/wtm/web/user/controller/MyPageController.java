@@ -2,10 +2,13 @@ package org.wtm.web.user.controller;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.wtm.web.user.dto.review.ReviewPageResponse;
 import org.wtm.web.user.dto.user.UserUpdateDto;
 import org.wtm.web.user.dto.bookmark.BookmarkDto;
 import org.wtm.web.user.dto.review.UserReviewDto;
@@ -88,11 +91,12 @@ public class MyPageController {
             @RequestParam("username") String username,
             @RequestParam("month") int month,
             @RequestParam("year") int year,
-            @RequestParam("page") int page,
-            @RequestParam("size") int size
+            @RequestParam("type") String type,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
     ) {
-
-        TicketHistoryResponseDto ticketHistoryResponseDto = myPageService.getMyTicketHistory(username, month, year, page, size);
+        Pageable pageable = PageRequest.of(page, size);
+        TicketHistoryResponseDto ticketHistoryResponseDto = myPageService.getMyTicketHistory(username, month, year, type, pageable);
 
         if (ticketHistoryResponseDto != null){
             return ResponseEntity.ok(ticketHistoryResponseDto); // 200 OK와 함께 데이터 반환
@@ -106,9 +110,13 @@ public class MyPageController {
             @RequestParam("username") String username,
             @RequestParam("storeId") Long storeId,
             @RequestParam("month") int month,
-            @RequestParam("year") int year
+            @RequestParam("year") int year,
+            @RequestParam("type") String type,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
     ) {
-        TicketHistoryResponseDto ticketHistoryResponseDto = myPageService.getMyTicketHistoryByStore(username, storeId, month, year);
+        Pageable pageable = PageRequest.of(page, size);
+        TicketHistoryResponseDto ticketHistoryResponseDto = myPageService.getMyTicketHistoryByStore(username, storeId, month, year, type, pageable);
         if (ticketHistoryResponseDto != null){
             return ResponseEntity.ok(ticketHistoryResponseDto); // 200 OK와 함께 데이터 반환
         }
@@ -116,23 +124,27 @@ public class MyPageController {
     }
 
     // 본인 리뷰 목록 조회
-    @GetMapping("/reviews")
-    public ResponseEntity<List<UserReviewDto>> getMyReviews(@RequestParam("username") String username) {
-        List<UserReviewDto> userReviewDto = myPageService.getMyReviews(username);
-        if (userReviewDto != null){
-            return ResponseEntity.ok(userReviewDto); // 200 OK와 함께 데이터 반환
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
+    @GetMapping("/reviews/{userId}")
+    public ResponseEntity<ReviewPageResponse> getMyReviews(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size){
+        try {
+            Pageable pageable = PageRequest.of(page, size);
+            ReviewPageResponse response = myPageService.getMyReviews(userId, pageable);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }}
 
-    }
 
     // 사용자가 본인 리뷰 삭제
-    @DeleteMapping("/reviews")
+    @DeleteMapping("/reviews/{reviewId}/userIds/{userId}")
     public ResponseEntity<String> deleteMyReview(
             @PathVariable Long reviewId,
-            @PathVariable String username
+            @PathVariable Long userId
     ) {
-        boolean result = myPageService.deleteMyReview(reviewId, username);
+        boolean result = myPageService.deleteMyReview(reviewId, userId);
 
         if (result) {
             return ResponseEntity.ok().body("Successfully delete review"); // 200 OK와 함께 데이터 반환
@@ -151,11 +163,8 @@ public class MyPageController {
     }
 
     @PostMapping("/bookmarks")
-    public ResponseEntity<String> saveMyBookmark(
-            @RequestParam("storeId") Long storeId,
-            @RequestParam("username") String username
-            ) {
-        boolean result = myPageService.saveMyBookmark(storeId, username);
+    public ResponseEntity<String> saveMyBookmark(@RequestBody BookmarkDto bookmarkDto) {
+        boolean result = myPageService.saveMyBookmark(bookmarkDto);
 
         if (result) {
             return ResponseEntity.ok().body("Successfully add bookmark"); // 200 OK와 함께 데이터 반환
