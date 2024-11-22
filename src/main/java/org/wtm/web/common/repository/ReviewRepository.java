@@ -1,6 +1,8 @@
 package org.wtm.web.common.repository;
 
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -39,6 +41,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @EntityGraph(attributePaths = "store")
     List<Review> findByUserId(Long userId);
+
+    Page<Review> findAllByUserId(Long userId, Pageable pageable);
 
     Optional<Review> findByIdAndUserId(Long reviewId, Long userId);
 }

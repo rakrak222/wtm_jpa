@@ -1,10 +1,11 @@
 package org.wtm.web.user.service;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.wtm.web.user.dto.review.ReviewPageResponse;
 import org.wtm.web.user.dto.user.UserResponseDto;
 import org.wtm.web.user.dto.user.UserUpdateDto;
 import org.wtm.web.user.dto.bookmark.BookmarkDto;
-import org.wtm.web.user.dto.review.UserReviewDto;
 import org.wtm.web.user.dto.ticket.*;
 
 import java.util.List;
@@ -20,17 +21,17 @@ public interface MyPageService {
 
     List<TicketSummaryDto> getTicketsOwnedByUser(String username);
 
-    TicketHistoryResponseDto getMyTicketHistory(String username, int month, int year, int page, int size);
+    TicketHistoryResponseDto getMyTicketHistory(String username, int month, int year, String type, Pageable pageable);
 
-    TicketHistoryResponseDto getMyTicketHistoryByStore(String username, Long storeId, int month, int year);
+    TicketHistoryResponseDto getMyTicketHistoryByStore(String username, Long storeId, int month, int year, String type, Pageable pageable);
 
-    List<UserReviewDto> getMyReviews(String username);
+    ReviewPageResponse getMyReviews(Long userId, Pageable pageable);
 
     List<BookmarkDto> getMyBookmarks(String username);
 
-    boolean deleteMyReview(Long reviewId, String username);
+    boolean deleteMyReview(Long reviewId, Long userId);
 
-    boolean saveMyBookmark(Long storeId, String username);
+    boolean saveMyBookmark(BookmarkDto bookmarkDto);
 
     boolean deleteMyBookmark(Long storeId, String username);
 
