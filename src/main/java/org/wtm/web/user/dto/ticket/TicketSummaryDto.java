@@ -60,6 +60,10 @@ public class TicketSummaryDto {
         if(ticket.getPrice()!=null){
             ticketPrice = ticket.getPrice();
         }
+        String storeImgUrl=null;
+        if (store.getUser().getProfilePicture() != null){
+            storeImgUrl = store.getUser().getProfilePicture();
+        }
         return TicketSummaryDto.builder()
                 .storeId(store.getId())
                 .storeName(store.getName())
@@ -71,7 +75,7 @@ public class TicketSummaryDto {
                 .ticketAmount(ticketAmount)
                 .reviewAverage(reviewAverage)
                 .ticketId(ticket.getId())
-                .storeImgUrl(ticket.getStore().getImg())
+                .storeImgUrl(storeImgUrl)
                 .build();
     }
 

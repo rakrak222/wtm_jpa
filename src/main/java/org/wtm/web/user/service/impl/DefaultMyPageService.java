@@ -558,21 +558,23 @@ public class DefaultMyPageService implements MyPageService {
                     .map(bookmark -> {
                         Long storeId = bookmark.getStore().getId();
                         // storeId로 티켓 정보 조회
-                        List<Ticket> tickets = ticketRepository.findByStoreId(storeId, Sort.by(Sort.Direction.DESC, "price"));
-                        if (tickets.isEmpty()) {
-                            throw new IllegalArgumentException("No tickets found for the given storeId.");
+                        List<Ticket> tickets = ticketRepository.findByStoreId(storeId, Sort.by(Sort.Direction.DESC, "price"))
+                                .orElse(null);
+                        Ticket ticket;
+                        Long ticketPrice = null;
+                        if(!tickets.isEmpty()){
+                            ticket = tickets.getFirst();
+
+                            if(ticket.getPrice()!=null){
+                                ticketPrice = ticket.getPrice();
+                            }
                         }
-                        Ticket ticket = tickets.get(0);
                         String openTime = null;
                         String closeTime = null;
-                        Long ticketPrice = null;
                         Double reviewAvgScore = null;
                         if(bookmark.getStore().getOpenTime()!=null && bookmark.getStore().getCloseTime()!=null){
                             openTime = bookmark.getStore().getOpenTime().format(DateTimeFormatter.ofPattern("HH:mm"));
                             closeTime = bookmark.getStore().getCloseTime().format(DateTimeFormatter.ofPattern("HH:mm"));
-                        }
-                        if(ticket.getPrice()!=null){
-                            ticketPrice = ticket.getPrice();
                         }
                         if(reviewRepository.calculateAvgByStoreId(storeId)!=null){
                             reviewAvgScore = reviewRepository.calculateAvgByStoreId(storeId);
@@ -580,12 +582,16 @@ public class DefaultMyPageService implements MyPageService {
                                 reviewAvgScore = Math.round(reviewAvgScore * 10) / 10.0;
                             }
                         }
+                        String storeImgUrl=null;
+                        if (bookmark.getStore().getUser().getProfilePicture() != null){
+                            storeImgUrl = bookmark.getStore().getUser().getProfilePicture();
+                        }
                         return BookmarkDto.builder()
                                 .storeId(storeId)
                                 .storeName(bookmark.getStore().getName())
                                 .storeOpenTime(openTime)
                                 .storeCloseTime(closeTime)
-                                .storeImgUrl(bookmark.getStore().getImg())
+                                .storeImgUrl(storeImgUrl)
                                 .ticketPrice(ticketPrice)
                                 .reviewAverage(reviewAvgScore) // @Query를 이용한 평균 점수 계산
                                 .isBookmarked(true)
@@ -652,7 +658,7 @@ public class DefaultMyPageService implements MyPageService {
     public TicketDto getMyTicketDetail(Long storeId, String username) {
         Long userId = userRepository.findIdByEmail(username);
         // storeId로 관련된 모든 ticket 조회 (가격 내림차순 정렬)
-        List<Ticket> tickets = ticketRepository.findByStoreId(storeId, Sort.by(Sort.Direction.DESC, "price"));
+        List<Ticket> tickets = ticketRepository.findByStoreId(storeId, Sort.by(Sort.Direction.DESC, "price")).orElse(null);
         if (tickets.isEmpty()) {
             throw new IllegalArgumentException("No tickets found for the given storeId.");
         }
