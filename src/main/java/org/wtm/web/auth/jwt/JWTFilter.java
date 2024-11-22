@@ -136,9 +136,9 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // 2. 헤더에서 Bearer 토큰 가져오기
         String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+        if (authorizationHeader != null) {
             log.info("JWT token found in Authorization header.");
-            return authorizationHeader.substring(7); // "Bearer " 부분 제거
+            return authorizationHeader;
         }
         return null; // 토큰이 없으면 null 반환
     }
