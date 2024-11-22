@@ -11,16 +11,16 @@ public interface ReviewService {
 
     ReviewStatsDto getReviewStats(Long storeId);
 
-    void addReview(Long storeId, Long ticketHistoryUsageId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files, Long userId);
+    void addReview(Long storeId, Long ticketHistoryUsageId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files, String username);
 
 
-    Slice<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption, Pageable pageable, Long UserId);
+    Slice<ReviewListDto> getReviewsByStoreId(Long storeId, String sortOption, Pageable pageable, String username);
 
     ReviewCountDto getReviewCount(long storeId);
 
 
 
-    void addReviewLike(Long reviewId, Long fixedUserId);
+    void addReviewLike(Long reviewId, String username);
 
-    void removeReviewLike(Long reviewId, Long fixedUserId);
+    void removeReviewLike(Long reviewId, String username);
 }

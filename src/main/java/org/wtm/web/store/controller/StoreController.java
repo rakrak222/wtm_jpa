@@ -28,18 +28,19 @@ public class StoreController {
 
     // 전체 식당 조회(검색 기능 없는 버전)
 //    @GetMapping
-    public ResponseEntity<?> getAllStores() {
-        List<StoreResponseDto> stores = storeService.getAllStores();
-        if (stores.isEmpty()) {
-            return ResponseEntity.status(404).body("식당 목록이 없습니다.");
-        }
-        return ResponseEntity.ok(stores);
-    }
+//    public ResponseEntity<?> getAllStores() {
+//        List<StoreResponseDto> stores = storeService.getAllStores();
+//        if (stores.isEmpty()) {
+//            return ResponseEntity.status(404).body("식당 목록이 없습니다.");
+//        }
+//        return ResponseEntity.ok(stores);
+//    }
 
     // 전체 식당 조회(검색 기능 포함 버전)
     @GetMapping
-    public ResponseEntity<?> getStores(@RequestParam(required = false) String query) {
-        List<StoreResponseDto> stores = storeService.getStores(query);
+    public ResponseEntity<?> getStores(@RequestParam(required = false) String query, @RequestHeader("x-username") String username ) {
+        System.out.println("username = " + username);
+        List<StoreResponseDto> stores = storeService.getStores(query, username);
 
         if (stores.isEmpty()) {
             return ResponseEntity.status(404).body("식당 목록이 없습니다.");

@@ -27,8 +27,8 @@ public class DefaultBookmarkService implements BookmarkService {
     private static final Long FIXED_USER_ID = 1L;
 
     @Override
-    public void addBookmark(Long storeId) {
-        User user = userRepository.findById(FIXED_USER_ID)
+    public void addBookmark(Long storeId, String username) {
+        User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 가게가 존재하지 않습니다."));
@@ -47,8 +47,8 @@ public class DefaultBookmarkService implements BookmarkService {
     }
 
     @Override
-    public void removeBookmark(Long storeId) {
-        User user = userRepository.findById(FIXED_USER_ID)
+    public void removeBookmark(Long storeId, String username) {
+        User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 가게가 존재하지 않습니다."));
@@ -60,8 +60,8 @@ public class DefaultBookmarkService implements BookmarkService {
     }
 
     @Override
-    public BookmarkResponseDto getBookmarkStatus(Long storeId, Long userId) {
-        User user = userRepository.findById(userId)
+    public BookmarkResponseDto getBookmarkStatus(Long storeId, String username) {
+        User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 가게가 존재하지 않습니다."));
