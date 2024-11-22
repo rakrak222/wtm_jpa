@@ -34,7 +34,7 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
-        String token = jwtUtil.createJwt(username, role, 60*60*60L);
+        String token = jwtUtil.createJwt(username, role, 60*60*60L*1000);
 
         response.addCookie(createCookie("Authorization", token));
         response.sendRedirect("http://localhost:3000");
@@ -44,7 +44,7 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
 
         Cookie cookie = new Cookie(key, value);
         cookie.setHttpOnly(true);
-        cookie.setMaxAge(60*60*60);
+        cookie.setMaxAge(60*60*60*1000);
         //cookie.setSecure(true);
         cookie.setPath("/");
 
