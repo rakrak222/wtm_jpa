@@ -16,6 +16,7 @@ import org.wtm.web.store.model.Store;
 import org.wtm.web.store.model.StoreSns;
 import org.wtm.web.user.model.User;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -82,7 +83,6 @@ public class DefaultAdminStoreService implements AdminStoreService {
         }
 
         // 2-1. User 프로필 사진 업데이트
-
         if (img != null) {
             String savedImgUrl = uploadService.uploadFile(img, uploadDir);
             user.updateProfilePicture(savedImgUrl);
@@ -91,28 +91,29 @@ public class DefaultAdminStoreService implements AdminStoreService {
         // 3. StoreSns 정보 가져오기
         List<StoreSns> existingSnsList = storeSnsRepository.findByStoreId(storeId).orElse(List.of());
 
-        Address updatedAddress = updateDto.getStoreAddress();
-        Address existingAddress = store.getAddress();
-
-        // 4. Update Logic using builder pattern
-        Store updatedStore = Store.builder()
-                .id(store.getId()) // 기존 ID 유지
-                .name(updateDto.getStoreName() != null ? updateDto.getStoreName() : store.getName()) // 이름 업데이트
-                .address(updateDto.getStoreAddress() != null ? updatedAddress : existingAddress) // 주소 업데이트
-                .contact(updateDto.getPhone() != null ? updateDto.getPhone() : store.getContact()) // 연락처 업데이트
-                .openTime(updateDto.getOpenTime() != null ? updateDto.getOpenTime() : store.getOpenTime()) // 오픈 시간 업데이트
-                .closeTime(updateDto.getCloseTime() != null ? updateDto.getCloseTime() : store.getCloseTime()) // 종료 시간 업데이트
-                .user(user) // 기존 user 유지
-                .img(store.getImg()) // 기존 이미지 유지
-                .tickets(store.getTickets()) // 기존 tickets 유지
-                .bookmarks(store.getBookmarks()) // 기존 bookmarks 유지
-                .reviews(store.getReviews()) // 기존 reviews 유지
-                .storeSnsList(store.getStoreSnsList()) // 기존 storeSnsList 유지
-                .build();
+        // 4. 기존 Store 엔티티의 필드 업데이트
+        if (updateDto.getStoreName() != null) {
+            store.updateName(updateDto.getStoreName());
+        }
+        if (updateDto.getAddress() != null) {
+            store.updateAddress(updateDto.toAddress());
+        }
+        System.out.println(updateDto.getPostcode());
+        System.out.println(updateDto.getAddress());
+        System.out.println(updateDto.getDetailAddress());
+        if (updateDto.getPhone() != null) {
+            store.updateContact(updateDto.getPhone());
+        }
+        if (updateDto.getOpenTime() != null) {
+            store.updateOpenTime(updateDto.getOpenTime());
+        }
+        if (updateDto.getCloseTime() != null) {
+            store.updateCloseTime(updateDto.getCloseTime());
+        }
 
         // SNS 주소 업데이트 로직
         if (updateDto.getSnsAddress() != null) {
-            List<String> updatedSnsAddresses = updateDto.getSnsAddress();
+            List<String> updatedSnsAddresses = new ArrayList<>(updateDto.getSnsAddress());
 
             // 기존 SNS 업데이트 또는 삭제
             for (StoreSns existingSns : existingSnsList) {
@@ -136,10 +137,12 @@ public class DefaultAdminStoreService implements AdminStoreService {
             }
         }
 
-
         // 5. 저장
+        // 기존 엔티티를 수정했으므로, 별도의 save 메서드를 호출하지 않아도 @Transactional에 의해 자동 저장됩니다.
+        // 하지만 명시적으로 호출하고 싶다면 아래와 같이 호출할 수 있습니다.
+        storeRepository.save(store);
         adminUserRepository.save(user);
-        storeRepository.save(updatedStore);
     }
+
 
 }

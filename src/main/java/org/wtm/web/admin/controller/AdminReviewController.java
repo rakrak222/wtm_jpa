@@ -45,6 +45,7 @@ public class AdminReviewController {
             ReviewCommentResponseDto responseDto = adminReviewService.createReviewComment(storeId, reviewId, reviewCommentCreateDto);
             return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 

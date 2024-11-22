@@ -60,7 +60,7 @@ public class DefaultAdminReviewService implements AdminReviewService {
                 .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다"));
 
         User user = userRepository.findById(reviewCommentCreateDto.getUserId())
-                .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습ㄴ디ㅏ."));
+                .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         ReviewComment reviewComment = reviewCommentMapper.toReviewCommentEntity(reviewCommentCreateDto, store, review, user);
         ReviewComment savedReviewComment = reviewCommentRepository.save(reviewComment);
