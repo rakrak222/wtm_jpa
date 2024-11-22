@@ -18,7 +18,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     @Query("SELECT price FROM Ticket WHERE id = :ticketId")
     Long findPriceById(@Param("ticketId") Long ticketId);
 
-    List<Ticket> findByStoreId(Long storeId, Sort sort);
+    Optional<List<Ticket>> findByStoreId(Long storeId, Sort sort);
 
     List<Ticket> findAllByStoreId(Long storeId);
 
