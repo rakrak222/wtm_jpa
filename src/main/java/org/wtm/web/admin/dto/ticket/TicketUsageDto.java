@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 public class TicketUsageDto {
     private Long userId;
     private Long storeId;
-    private Long ticketId;
     private Long ticketQuantity;
     private String type;
 }

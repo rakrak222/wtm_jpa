@@ -66,4 +66,10 @@ public class  Store extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "store")
     private List<Meal> meals = new ArrayList<>();
+
+    public void updateName (String name) {this.name = name;};
+    public void updateContact (String contact) {this.contact = contact;};
+    public void updateAddress (Address address) {this.address = address;};
+    public void updateOpenTime (LocalTime openTime) {this.openTime = openTime;};
+    public void updateCloseTime (LocalTime closeTime) {this.closeTime = closeTime;};
 }
