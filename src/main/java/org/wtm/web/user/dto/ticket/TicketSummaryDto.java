@@ -50,12 +50,22 @@ public class TicketSummaryDto {
             Long ticketAmount,
             Double reviewAverage
             ) {
+        String openTime = null;
+        String closeTime = null;
+        Long ticketPrice = null;
+        if(store.getOpenTime()!=null && store.getCloseTime()!=null){
+            openTime = store.getOpenTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+            closeTime = store.getCloseTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+        }
+        if(ticket.getPrice()!=null){
+            ticketPrice = ticket.getPrice();
+        }
         return TicketSummaryDto.builder()
                 .storeId(store.getId())
                 .storeName(store.getName())
-                .storeOpentime(store.getOpenTime().format(DateTimeFormatter.ofPattern("HH:mm")))
-                .storeClosetime(store.getCloseTime().format(DateTimeFormatter.ofPattern("HH:mm")))
-                .ticketPrice(ticket.getPrice())
+                .storeOpentime(openTime)
+                .storeClosetime(closeTime)
+                .ticketPrice(ticketPrice)
                 .totalPurchasedTickets(totalPurchasedTickets)
                 .totalUsedTickets(totalUsedTickets)
                 .ticketAmount(ticketAmount)

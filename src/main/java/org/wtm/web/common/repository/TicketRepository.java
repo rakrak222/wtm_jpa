@@ -21,4 +21,5 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     List<Ticket> findByStoreId(Long storeId, Sort sort);
 
     List<Ticket> findAllByStoreId(Long storeId);
+
 }
