@@ -34,6 +34,13 @@ public class StoreInfoUpdateDto {
     @JsonFormat(pattern = "HH:mm")
     private LocalTime closeTime;
 
-    @Embedded
-    private Address storeAddress;
+    // Address 관련 필드 추가
+    private String postcode;
+    private String address;
+    private String detailAddress;
+    private String extraAddress;
+
+    public Address toAddress() {
+        return new Address(postcode, address, detailAddress, extraAddress);
+    }
 }
