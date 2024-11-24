@@ -15,13 +15,12 @@ public class UserUpdateDto {
     private String email;          // 사용자 이메일, ID로 사용
     private String name;           // 사용자 이름 또는 닉네임
     private String password;       // 사용자 비밀번호
-    private String role;           // 사용자 권한 (예: USER, ADMIN)
+    private String phone;          // 전화번호
 
     @Embedded
     private Address userAddress;        // 주소
 
-    private String phone;          // 전화번호
-    private MultipartFile profilePicture; // 프로필 사진 URL
+    private String profilePicture; // 프로필 사진 경로 저장용
 
     // User 엔티티로 변환
     public User toEntity(String name, Address address, String phone, String profilePictureUrl, String encodedPassword) {

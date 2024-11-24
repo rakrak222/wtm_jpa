@@ -2,6 +2,7 @@ package org.wtm.web.user.service;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.wtm.web.user.dto.review.ReviewPageResponse;
 import org.wtm.web.user.dto.user.UserResponseDto;
 import org.wtm.web.user.dto.user.UserUpdateDto;
@@ -17,7 +18,7 @@ public interface MyPageService {
 
     UserResponseDto getMySettings(String username);
 
-    boolean updateMySettings(UserUpdateDto userUpdateDto);
+    boolean updateMySettings(UserUpdateDto userUpdateDto, MultipartFile profilePicture);
 
     List<TicketSummaryDto> getTicketsOwnedByUser(String username);
 

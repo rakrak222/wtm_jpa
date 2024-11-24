@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.wtm.web.auth.dto.Address;
 import org.wtm.web.user.dto.review.ReviewListDto;
 import org.wtm.web.user.dto.review.ReviewPageResponse;
 import org.wtm.web.bookmark.model.Bookmark;
@@ -79,17 +80,19 @@ public class DefaultMyPageService implements MyPageService {
     }
 
     @Transactional
-    public boolean updateMySettings(UserUpdateDto userUpdateDto) {
+    public boolean updateMySettings(UserUpdateDto dto, MultipartFile profilePicture) {
 
-        User existedUser = userRepository.findByEmail(userUpdateDto.getEmail()).orElse(null);
+        User existedUser = userRepository.findByEmail(dto.getEmail()).orElse(null);
 
+        Address address = dto.getUserAddress();
+        System.out.println(dto.getUserAddress().getAddress());
         if (existedUser != null) {
-            existedUser.updateName(userUpdateDto.getName());
-            existedUser.updateAddress(userUpdateDto.getUserAddress());
-            existedUser.updatePhone(userUpdateDto.getPhone());
+            existedUser.updateName(dto.getName());
+            existedUser.updateAddress(address);
+            existedUser.updatePhone(dto.getPhone());
 
             // 프로필 사진 업로드 처리
-            MultipartFile file = userUpdateDto.getProfilePicture();
+            MultipartFile file = profilePicture;
             if (file != null && !file.isEmpty()) {  // 파일이 null이 아니고 비어있지 않으면
                 String savedFileUrl = uploadService.uploadFile(file, "users");
                 if (savedFileUrl != null) {
@@ -98,7 +101,7 @@ public class DefaultMyPageService implements MyPageService {
             }
 
             // 비밀번호 인코딩 처리
-            String encodedPassword = passwordEncoder.encode(userUpdateDto.getPassword());
+            String encodedPassword = passwordEncoder.encode(dto.getPassword());
             existedUser.updatePassword(encodedPassword);
             return true;
         }

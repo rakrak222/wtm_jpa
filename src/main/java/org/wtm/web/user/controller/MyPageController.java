@@ -1,6 +1,7 @@
 package org.wtm.web.user.controller;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.wtm.web.user.dto.review.ReviewPageResponse;
 import org.wtm.web.user.dto.user.UserUpdateDto;
 import org.wtm.web.user.dto.bookmark.BookmarkDto;
@@ -51,13 +53,26 @@ public class MyPageController {
 
     // 사용자 정보 업데이트
     @PutMapping(value = "/settings", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> updateMySettings(@ModelAttribute UserUpdateDto userUpdateDto) {
-        boolean result = myPageService.updateMySettings(userUpdateDto);
+    public ResponseEntity<String> updateMySettings(
+            @RequestParam("dto") String rawDto, // JSON 문자열
+            @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture) {
+        try{
+            System.out.println("rawDto: " + rawDto);
+            // JSON 문자열을 DTO로 변환
+            ObjectMapper objectMapper = new ObjectMapper();
+            UserUpdateDto dto = objectMapper.readValue(rawDto, UserUpdateDto.class);
 
-        if (result){
-            return ResponseEntity.ok().body("User settings updated successfully"); // 200 OK와 함께 데이터 반환
+            boolean result = myPageService.updateMySettings(dto, profilePicture);
+            if (result){
+                return ResponseEntity.ok().body("User settings updated successfully"); // 200 OK와 함께 데이터 반환
+            }
+            else{
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found 반환
     }
 
     // 사용자가 소유한 티켓의 가게 목록 조회
