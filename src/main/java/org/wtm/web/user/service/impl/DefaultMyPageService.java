@@ -182,6 +182,13 @@ public class DefaultMyPageService implements MyPageService {
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
 
+        // Pageable에 내림차순 정렬 추가
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "regDate")
+        );
+
         // 초기화
         List<TicketAllHistoryDto> combinedHistory;
         Long totalPurchasedPrice = 0L;
@@ -193,7 +200,7 @@ public class DefaultMyPageService implements MyPageService {
         // type에 따라 로직 분기
         if ("usage".equalsIgnoreCase(type)) {
             Page<TicketHistoryUsage> usageHistoryPage = ticketHistoryUsageRepository
-                    .findByUserIdAndRegDateBetween(userId, startDateTime, endDateTime, pageable);
+                    .findByUserIdAndRegDateBetween(userId, startDateTime, endDateTime, sortedPageable);
 
             combinedHistory = usageHistoryPage.stream()
                     .map(usage -> TicketAllHistoryDto.builder()
@@ -215,7 +222,7 @@ public class DefaultMyPageService implements MyPageService {
 
         } else if ("purchase".equalsIgnoreCase(type)) {
             Page<TicketHistoryPurchase> purchaseHistoryPage = ticketHistoryPurchaseRepository
-                    .findByUserIdAndRegDateBetween(userId, startDateTime, endDateTime, pageable);
+                    .findByUserIdAndRegDateBetween(userId, startDateTime, endDateTime, sortedPageable);
 
             combinedHistory = purchaseHistoryPage.stream()
                     .map(purchase -> TicketAllHistoryDto.builder()
@@ -236,10 +243,10 @@ public class DefaultMyPageService implements MyPageService {
 
         } else { // 기본값: all
             Page<TicketHistoryUsage> usageHistoryPage = ticketHistoryUsageRepository
-                    .findByUserIdAndRegDateBetween(userId, startDateTime, endDateTime, pageable);
+                    .findByUserIdAndRegDateBetween(userId, startDateTime, endDateTime, sortedPageable);
 
             Page<TicketHistoryPurchase> purchaseHistoryPage = ticketHistoryPurchaseRepository
-                    .findByUserIdAndRegDateBetween(userId, startDateTime, endDateTime, pageable);
+                    .findByUserIdAndRegDateBetween(userId, startDateTime, endDateTime, sortedPageable);
 
             List<TicketAllHistoryDto> usageHistory = usageHistoryPage.stream()
                     .map(usage -> TicketAllHistoryDto.builder()
@@ -271,7 +278,7 @@ public class DefaultMyPageService implements MyPageService {
                     .collect(Collectors.toList());
 
             combinedHistory = Stream.concat(purchaseHistory.stream(), usageHistory.stream())
-                    .sorted(Comparator.comparing(TicketAllHistoryDto::getRegDate)) // ASC 정렬
+                    .sorted(Comparator.comparing(TicketAllHistoryDto::getRegDate).reversed()) // DESC 정렬
                     .collect(Collectors.toList());
 
             totalPages = Math.max(usageHistoryPage.getTotalPages(), purchaseHistoryPage.getTotalPages());
@@ -290,10 +297,11 @@ public class DefaultMyPageService implements MyPageService {
                 .stream()
                 .mapToLong(usage -> usage.getAmount() * ticketRepository.findPriceById(usage.getTicket().getId()))
                 .sum();
+
         totalAmount = ticketHistoryPurchaseRepository
-                        .getPurchaseAmountByUserId(userId).orElse(0L)
-                    - ticketHistoryUsageRepository
-                        .getUsageAmountByUserId(userId).orElse(0L);
+                .getPurchaseAmountByUserId(userId).orElse(0L)
+                - ticketHistoryUsageRepository
+                .getUsageAmountByUserId(userId).orElse(0L);
 
         int currentPage = pageable.getPageNumber() + 1; // 0부터 시작하므로 +1
 
@@ -316,6 +324,13 @@ public class DefaultMyPageService implements MyPageService {
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
 
+        // Pageable에 내림차순 정렬 추가
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "regDate")
+        );
+
         List<TicketAllHistoryDto> combinedHistory;
         Long totalPurchasedPrice = 0L;
         Long totalUsedPrice = 0L;
@@ -329,11 +344,9 @@ public class DefaultMyPageService implements MyPageService {
                 .map(Ticket::getId)
                 .collect(Collectors.toList());
 
-        System.out.println("tickets :" + tickets);
-
         if ("usage".equalsIgnoreCase(type)) {
             Page<TicketHistoryUsage> usageHistoryPage = ticketHistoryUsageRepository
-                    .findByUserIdAndRegDateBetweenAndTicketIdIn(userId, startDateTime, endDateTime, ticketIds, pageable);
+                    .findByUserIdAndRegDateBetweenAndTicketIdIn(userId, startDateTime, endDateTime, ticketIds, sortedPageable);
 
             combinedHistory = usageHistoryPage.stream()
                     .map(usage -> TicketAllHistoryDto.builder()
@@ -355,7 +368,7 @@ public class DefaultMyPageService implements MyPageService {
 
         } else if ("purchase".equalsIgnoreCase(type)) {
             Page<TicketHistoryPurchase> purchaseHistoryPage = ticketHistoryPurchaseRepository
-                    .findByUserIdAndRegDateBetweenAndTicketIdIn(userId, startDateTime, endDateTime, ticketIds, pageable);
+                    .findByUserIdAndRegDateBetweenAndTicketIdIn(userId, startDateTime, endDateTime, ticketIds, sortedPageable);
 
             combinedHistory = purchaseHistoryPage.stream()
                     .map(purchase -> TicketAllHistoryDto.builder()
@@ -376,10 +389,10 @@ public class DefaultMyPageService implements MyPageService {
 
         } else { // 기본값: all
             Page<TicketHistoryUsage> usageHistoryPage = ticketHistoryUsageRepository
-                    .findByUserIdAndRegDateBetweenAndTicketIdIn(userId, startDateTime, endDateTime, ticketIds, pageable);
+                    .findByUserIdAndRegDateBetweenAndTicketIdIn(userId, startDateTime, endDateTime, ticketIds, sortedPageable);
 
             Page<TicketHistoryPurchase> purchaseHistoryPage = ticketHistoryPurchaseRepository
-                    .findByUserIdAndRegDateBetweenAndTicketIdIn(userId, startDateTime, endDateTime, ticketIds, pageable);
+                    .findByUserIdAndRegDateBetweenAndTicketIdIn(userId, startDateTime, endDateTime, ticketIds, sortedPageable);
 
             List<TicketAllHistoryDto> usageHistory = usageHistoryPage.stream()
                     .map(usage -> TicketAllHistoryDto.builder()
@@ -411,7 +424,7 @@ public class DefaultMyPageService implements MyPageService {
                     .collect(Collectors.toList());
 
             combinedHistory = Stream.concat(purchaseHistory.stream(), usageHistory.stream())
-                    .sorted(Comparator.comparing(TicketAllHistoryDto::getRegDate))
+                    .sorted(Comparator.comparing(TicketAllHistoryDto::getRegDate).reversed()) // DESC 정렬
                     .collect(Collectors.toList());
 
             totalPages = Math.max(usageHistoryPage.getTotalPages(), purchaseHistoryPage.getTotalPages());
