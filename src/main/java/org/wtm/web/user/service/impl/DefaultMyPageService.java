@@ -460,103 +460,17 @@ public class DefaultMyPageService implements MyPageService {
                 .build();
     }
 
-//    public TicketHistoryResponseDto getMyTicketHistoryByStore(String username, Long storeId, int month, int year, String type, Pageable pageable) {
-//        Long userId = userRepository.findIdByEmail(username);
-//        // 시작일과 종료일 설정
-//        LocalDate startDate = LocalDate.of(year, month, 1);
-//        LocalDate endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
-//        LocalDateTime startDateTime = startDate.atStartOfDay();
-//        LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
-//
-//        List<TicketAllHistoryDto> combinedHistory;
-//        Long totalPurchasedPrice = 0L;
-//        Long totalUsedPrice = 0L;
-//        Long totalAmount = 0L;
-//        int totalPages = 0;
-//        long totalItems = 0;
-//
-//        // storeId로 티켓 목록 가져오기
-//        List<Ticket> tickets = ticketRepository.findByStoreId(storeId);
-//        List<Long> ticketIds = tickets.stream()
-//                .map(Ticket::getId)
-//                .collect(Collectors.toList());
-//
-//        // TicketHistoryUsage 데이터 가져오기 (ticketId 조건 추가)
-//        List<TicketAllHistoryDto> usageHistory = ticketHistoryUsageRepository
-//                .findByUserIdAndRegDateBetween(userId, startDateTime, endDateTime)
-//                .stream()
-//                .filter(usage -> ticketIds.contains(usage.getTicket().getId()))
-//                .map(usage -> {
-//                    String storeName = usage.getTicket().getStore().getName();
-//                    System.out.println(storeName);
-//                    return TicketAllHistoryDto.builder()
-//                            .id(usage.getId())
-//                            .userId(userId)
-//                            .amount(usage.getAmount())
-//                            .ticketId(usage.getTicket().getId())
-//                            .price(usage.getAmount()*ticketRepository.findPriceById(usage.getTicket().getId()))
-//                            .type("usage")
-//                            .regDate(usage.getRegDate())
-//                            .storeName(storeName)
-//                            .build();
-//                })
-//                .collect(Collectors.toList());
-//
-//        // TicketHistoryPurchase 데이터 가져오기 (ticketId 조건 추가)
-//        List<TicketAllHistoryDto> purchaseHistory = ticketHistoryPurchaseRepository
-//                .findByUserIdAndRegDateBetween(userId, startDateTime, endDateTime)
-//                .stream()
-//                .filter(purchase -> ticketIds.contains(purchase.getTicket().getId()))
-//                .map(purchase -> {
-//                    String storeName = purchase.getTicket().getStore().getName();
-//                    System.out.println(storeName);
-//                    return TicketAllHistoryDto.builder()
-//                            .id(purchase.getId())
-//                            .userId(userId)
-//                            .amount(purchase.getAmount())
-//                            .ticketId(purchase.getTicket().getId())
-//                            .price(purchase.getAmount()*ticketRepository.findPriceById(purchase.getTicket().getId()))
-//                            .type("purchase")
-//                            .regDate(purchase.getRegDate())
-//                            .storeName(storeName)
-//                            .build();
-//                })
-//                .collect(Collectors.toList());
-//
-//        // 두 목록을 합치고 날짜로 정렬
-//        List<TicketAllHistoryDto> combinedHistory = Stream.concat(purchaseHistory.stream(), usageHistory.stream())
-//                .sorted(Comparator.comparing(TicketAllHistoryDto::getRegDate))
-//                .collect(Collectors.toList());
-//
-//        // totalPurchasedPrice와 totalUsedPrice 계산
-//        Long totalPurchasedPrice = purchaseHistory.stream()
-//                .mapToLong(purchase -> purchase.getAmount() * ticketRepository.findPriceById(purchase.getTicketId()))
-//                .sum();
-//
-//        Long totalUsedPrice = usageHistory.stream()
-//                .mapToLong(usage -> usage.getAmount() * ticketRepository.findPriceById(usage.getTicketId()))
-//                .sum();
-//
-//        // 전체 티켓 개수 계산 (purchase - usage)
-//        Long totalAmount = purchaseHistory.stream().mapToLong(TicketAllHistoryDto::getAmount).sum()
-//                - usageHistory.stream().mapToLong(TicketAllHistoryDto::getAmount).sum();
-//
-//        // 두 목록을 합치고 날짜로 정렬
-//        List<TicketAllHistoryDto> combinedHistoryForStore = Stream.concat(purchaseHistory.stream(), usageHistory.stream())
-//                .sorted(Comparator.comparing(TicketAllHistoryDto::getRegDate))
-//                .collect(Collectors.toList());
-//
-//        return TicketHistoryResponseDto.builder()
-//                .combinedHistory(combinedHistoryForStore)
-//                .totalPurchasedPrice(totalPurchasedPrice)
-//                .totalUsedPrice(totalUsedPrice)
-//                .totalAmount(totalAmount)
-//                .build();
-//    }
-
-
     public ReviewPageResponse getMyReviews(Long userId, Pageable pageable) {
-        Page<Review> reviewPage = reviewRepository.findAllByUserId(userId, pageable);
+
+        // Pageable에 내림차순 정렬 추가
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "regDate")
+        );
+
+        Page<Review> reviewPage = reviewRepository.findAllByUserId(userId, sortedPageable);
+
         List<ReviewListDto> reviewList = reviewPage.stream()
                 .map(userReviewMapper::toReviewListDto)
                 .collect(Collectors.toList());
